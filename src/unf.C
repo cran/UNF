@@ -44,8 +44,8 @@ int selftest (int);
 int check_little_endian(void);
 uint64_t ntoh64(uint64_t);
 uint64_t hton64(uint64_t);
-long htonl (long) ;
-long ntohl (long);
+long int myhtonl (long int) ;
+long int myntohl (long int);
 
 /*
  * GLOBALS
@@ -621,7 +621,7 @@ int check_little_endian (void) {
 uint64_t ntoh64(uint64_t n) {
 	/* Derived from GNUnet, by Christian Grothoff, et. al */
 	if (IS_LITTLE_ENDIAN) {
-		return (((uint64_t) ntohl(n)) << 32) + ntohl(n >> 32);
+		return (((uint64_t) myntohl(n)) << 32) + myntohl(n >> 32);
 	} else {
 		return(n);
 	}
@@ -631,7 +631,7 @@ uint64_t hton64 ( uint64_t n) {
 	/* Derived from GNUnet, by Christian Grothoff, et. al */
 
 	if (IS_LITTLE_ENDIAN) {
-		return (((uint64_t)htonl(n)) << 32) + htonl(n >> 32);
+		return (((uint64_t)myhtonl(n)) << 32) + myhtonl(n >> 32);
 	} else {
 		return n; 
 	}
@@ -677,7 +677,7 @@ void tobase64(unsigned char *out, md5_byte_t *in, int inlen)
 		anyway. 
 */
 
-long ntohl(long x) {
+long int myntohl(long int x) {
      if (IS_LITTLE_ENDIAN) {
       x = ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) |               \
       (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24));
@@ -685,7 +685,7 @@ long ntohl(long x) {
      return(x);
 }
 
-long htonl(long x) {
+long int myhtonl(long int x) {
      if (IS_LITTLE_ENDIAN) {
      x= ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) |               \
       (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24));
