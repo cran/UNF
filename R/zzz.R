@@ -3,7 +3,7 @@
     stop("This version for R 1.6 or later")
   }
   if (!unfTest()) {
-  	warning("unf: failed self-test");
+  	warning("unf: failed self-test")
   }
-  return(TRUE);
+  return(TRUE)
 }

@@ -38,14 +38,23 @@ typedef unsigned char cbyte;
 
 /* #define FORCELOCALE*/
 
-#ifndef NOLONGDOUBLE
+#ifndef PEDANTIC 
+typedef long double UNFldouble;
+typedef long long UNFllong;
+#else 
+typedef double UNFldouble;
+typedef long UNFllong;
+#endif 
+
+#ifndef PEDANTIC 
 char *Genround(long double , int );
+char *Genround(long long, int );
 #endif
+
 char *Genround(char*, int );
-char *Genround(long long int , int );
 char *Genround(short int , int );
 char *Genround(int , int ) ;
-char *Genround(long int , int ); 
+char *Genround(long, int ); 
 char *Genround(double , int );
 char *Genround(float , int ) ;
 
@@ -53,15 +62,10 @@ uint64_t Checksum_bytes(uint64_t , cbyte* , int );
 uint64_t CRC64(uint64_t , cbyte* , int );
 char* Canonicalize_unicode(const char*, char*, int*);
 
-#ifdef NOLONGDOUBLE
-uint64_t UNF1 (double , int , uint64_t , int ) ;
-uint64_t UNF2 (double , int , uint64_t , int ) ;
-int UNF3 (double , int , md5_state_t* , int ) ;
-#else
-uint64_t UNF1 (long double , int , uint64_t , int ) ;
-uint64_t UNF2 (long double , int , uint64_t , int ) ;
-int UNF3 (long double , int , md5_state_t* , int ) ;
-#endif
+uint64_t UNF1 (UNFldouble , int , uint64_t , int ) ;
+uint64_t UNF2 (UNFldouble , int , uint64_t , int ) ;
+int UNF3 (UNFldouble , int , md5_state_t* , int ) ;
+
 uint64_t UNF1 (char* , int , uint64_t , int ) ;
 int UNF3 (char*, int , md5_state_t* , int );
 uint64_t UNF2 (char* , int , uint64_t , int ) ;

@@ -44,8 +44,8 @@ int selftest (int);
 int check_little_endian(void);
 uint64_t ntoh64(uint64_t);
 uint64_t hton64(uint64_t);
-long int htonl (long int);
-long int ntohl (long int);
+long htonl (long) ;
+long ntohl (long);
 
 /*
  * GLOBALS
@@ -81,11 +81,7 @@ int static IS_LITTLE_ENDIAN= check_little_endian();
  */
 
 
-#ifdef NOLONGDOUBLE
-char *Genround(double n, int digits ) {
-#else
-char *Genround(long double n, int digits ) {
-#endif
+char *Genround(UNFldouble n, int digits ) {
 	#ifdef FORCELOCALE
 	char *oldlocale;
 	#endif
@@ -97,7 +93,7 @@ char *Genround(long double n, int digits ) {
 	oldlocale = setlocale(LC_ALL, "POSIX");
 	#endif 
 
-	#ifdef NOLONGDOUBLE
+	#ifdef PEDANTIC
 	sprintf(buf,"%+#.*e\n", digits-1,  n);
 	#else
 	sprintf(buf,"%+#.*Le\n", digits-1,  n);
@@ -184,51 +180,31 @@ char *Genround(char *n, int digits) {
 
 /* these are simply wrappers around long double versions */
 
-#ifdef NOLONGDOUBLE
-char *Genround(long long int n, int digits ) {
-	return(Genround((double) n, digits));
-}
-
-char *Genround(short int n, int digits ) {
-	return(Genround((double) n, digits));
-}
-
-char *Genround(int n, int digits ) {
-	return(Genround((double) n, digits));
-}
-
-char *Genround(long int n, int digits ) {
-	return(Genround((double) n, digits));
-}
-
-char *Genround(float n, int digits ) {
-	return(Genround((double) n, digits));
-}
-#else
-char *Genround(long long int n, int digits ) {
-	return(Genround((long double) n, digits));
-}
-
-char *Genround(short int n, int digits ) {
-	return(Genround((long double) n, digits));
-}
-
-char *Genround(int n, int digits ) {
-	return(Genround((long double) n, digits));
-}
-
-char *Genround(long int n, int digits ) {
-	return(Genround((long double) n, digits));
+#ifndef PEDANTIC
+char *Genround(long long n, int digits ) {
+	return(Genround((UNFldouble) n, digits));
 }
 
 char *Genround(double n, int digits ) {
-	return(Genround((long double) n, digits));
+	return(Genround((UNFldouble) n, digits));
+}
+#endif
+
+char *Genround(short int n, int digits ) {
+	return(Genround((UNFldouble) n, digits));
+}
+
+char *Genround(int n, int digits ) {
+	return(Genround((UNFldouble) n, digits));
+}
+
+char *Genround(long n, int digits ) {
+	return(Genround((UNFldouble) n, digits));
 }
 
 char *Genround(float n, int digits ) {
-	return(Genround((long double) n, digits));
+	return(Genround((UNFldouble) n, digits));
 }
-#endif
 
 
 /*
@@ -289,7 +265,7 @@ uint64_t CRC64(uint64_t previous , cbyte* sequence, int len){
 
   for (i = 0; i < len; i++) {
     uint64_t temp1 = crc >> 8;
-    uint64_t temp2 = CRCTable[(crc ^ (unsigned long long) sequence[i]) & 0xff];
+    uint64_t temp2 = CRCTable[(crc ^ (uint64_t) sequence[i]) & 0xff];
     crc = temp1 ^ temp2;
   }
 
@@ -382,11 +358,7 @@ char* Canonicalize_unicode(const char *charset, char *inbuf, int *bytes_converte
  *
  */
 
-#ifdef NOLONGDOUBLE
-uint64_t UNF1 (double n, int digits, uint64_t previous, int miss) {
-#else
-uint64_t UNF1 (long double n, int digits, uint64_t previous, int miss) {
-#endif
+uint64_t UNF1 (UNFldouble n, int digits, uint64_t previous, int miss) {
 	char *tmps, *tmpu=NULL;
 	int bytes_converted;
 	uint64_t r;
@@ -436,11 +408,7 @@ uint64_t UNF1 (char *n, int digits, uint64_t previous, int miss) {
 	return(r);
 }
 
-#ifdef NOLONGDOUBLE
-uint64_t UNF2 (double n, int digits, uint64_t previous, int miss) {
-#else
-uint64_t UNF2 (long double n, int digits, uint64_t previous, int miss) {
-#endif
+uint64_t UNF2 (UNFldouble n, int digits, uint64_t previous, int miss) {
 	char *tmps, *tmpu=NULL;
 	int bytes_converted;
 	const char *missv="\0\0\0"; int missl=3;
@@ -539,11 +507,7 @@ int UNF3 (char *n, int digits, md5_state_t *previous, int miss) {
 	return(1);
 }
 
-#ifdef NOLONGDOUBLE
-int UNF3 (double n, int digits, md5_state_t *previous, int miss) {
-#else
-int UNF3 (long double n, int digits, md5_state_t *previous, int miss) {
-#endif
+int UNF3 (UNFldouble n, int digits, md5_state_t *previous, int miss) {
 	char *tmps, *tmpu=NULL;
 	const char *missv="\0\0\0"; int missl=3;
 	int bytes_converted;
@@ -600,7 +564,7 @@ int UNF3 (long double n, int digits, md5_state_t *previous, int miss) {
 int UNF_init (int quiet) {
 
    	int mantissa_bits= 1, bitsperbyte = 0, retval=0;
-        long double x1 = 1.0, delta = 0.5, x2 = x1 + delta;
+        UNFldouble x1 = 1.0, delta = 0.5, x2 = x1 + delta;
 
 	unsigned char t=1;
 	while (t!=0 && bitsperbyte< 1024) {
@@ -623,14 +587,14 @@ int UNF_init (int quiet) {
 		   mantissa_bits++;
         }
 
-	if (mantissa_bits <  bitsperbyte*(signed int) sizeof(long long unsigned int)) {
+	if (mantissa_bits <  bitsperbyte*(signed int) sizeof(UNFllong)) {
 		retval = -1;
 		if (quiet!=0) {
-			fprintf(stderr, "Warning: long long ints may lose precision when "
-						"converted to long doubles \n");
-			fprintf(stderr, "long double mantissa %d \n", mantissa_bits);
-			fprintf(stderr, "sizeof long long unsigned int %d \n", 
-					(signed int) sizeof (long long unsigned int));
+			fprintf(stderr, "Warning: UNFllong's may lose precision when "
+						"converted to UNFldoubles \n");
+			fprintf(stderr, "UNFldouble mantissa %d \n", mantissa_bits);
+			fprintf(stderr, "sizeof UNFllong unsigned int %d \n", 
+					(signed int) sizeof (UNFllong));
 		}
 	}
 
@@ -713,7 +677,7 @@ void tobase64(unsigned char *out, md5_byte_t *in, int inlen)
 		anyway. 
 */
 
-long int ntohl(long int x) {
+long ntohl(long x) {
      if (IS_LITTLE_ENDIAN) {
       x = ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) |               \
       (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24));
@@ -721,7 +685,7 @@ long int ntohl(long int x) {
      return(x);
 }
 
-long int htonl(long int x) {
+long htonl(long x) {
      if (IS_LITTLE_ENDIAN) {
      x= ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) |               \
       (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24));
