@@ -125,7 +125,7 @@ summary(mf10)
 #self test
 
 unfTest=get("unfTest",envir=environment(unf))
-if (!unfTest(silent=F)) {
+if (!unfTest(silent=FALSE)) {
 	stop("failed self tests")
 }
 

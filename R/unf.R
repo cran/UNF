@@ -101,7 +101,12 @@ summary.unf<-function(object,...) {
 	cdigits = unlist(unfattr["cdigits",])
 	ndigits = unlist(unfattr["ndigits",])
 	versions= unlist(unfattr["version",])
+
+	# Sort order under US_ENGLISH is problematic
+	ol = Sys.getlocale("LC_COLLATE")
+	Sys.setlocale("LC_COLLATE","C")
 	ret = unf(sort(sigs),cdigits=256,version=versions[1])	
+	Sys.setlocale("LC_COLLATE",ol)
 	attr(ret[[1]],"cdigits")=cdigits[1];
 	attr(ret[[1]],"ndigits")=ndigits[1];
 	if ((sum(ndigits!=ndigits[1])>0) || (sum(cdigits!=cdigits[1])>0) || 

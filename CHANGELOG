@@ -9,3 +9,8 @@
 - UNF Version 4, replaces MD5 with SHA256 algorithm
 - check with codetools()
 - remove -static (request from Brian Ripley)
+
+1.04 
+- Set locale for sort order
+- Add vignette
+- Move citation
