@@ -9,6 +9,7 @@ if ( test "$UNAME" == "Linux" ); then
 elif ( test "$UNAME" == "Darwin" ); then
 	PKG_CFLAGS=" -DICONV18"
 	PKG_CXXFLAGS=" -DICONV18"
+ 	PKG_LIBS=" -liconv"
 fi
 
 echo "PKG_CFLAGS = $PKG_CFLAGS" > src/Makevars.unix

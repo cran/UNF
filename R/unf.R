@@ -224,6 +224,13 @@ function(silent=TRUE) {
        }
   }
 
+  cvs = "E8+DS5SG4CSoM7j8KAkC9A==";
+  if (unf2base64(summary(unf(as.data.frame(cbind(x1,x2)))))!=cvs) {
+	ret=FALSE
+	if (!silent) {
+		warning("Failed replication.")
+       }
+  }
 
    return(ret)
 }
