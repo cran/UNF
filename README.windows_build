@@ -6,7 +6,7 @@ the package can be installed as follows:
 Obtain the pre-compiled windows libiconv-1.8 from the GnuWin32 site packages page:
 
 - go to http://gnuwin32.sourceforge.net/packages/libiconv.htm
-- select the "Zip" download link under "Binaries"
+- select the "Zip" download link under "Developer Files" (NOT "binaries")
 - Unzip the downloaded file in a separate directory .
 - copy include/iconv.h to the mingw/include directory
 - copy the files in lib/ to the mingw/lib directory 
