@@ -21,13 +21,13 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-v4DefaultNdig = 8;
+v4DefaultNdig = 7;
 v4DefaultCdig = 128;
 
 "unf" <-
 function(data, 
 	digits=NULL,
-	ndigits= {if (is.null(digits)) {6} else (digits)}, 
+	ndigits= {if (is.null(digits)) {7} else (digits)}, 
 	cdigits= {if (is.null(digits)) {128} else (digits)}, 
 	version=4, 
 	rowIndexVar=NULL,

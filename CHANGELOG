@@ -17,3 +17,6 @@
 
 1.05
 - fix bug in as.unf
+
+1.06
+- workaround for lack of posix locale under windows

@@ -63,7 +63,7 @@ int static IS_LITTLE_ENDIAN= check_little_endian();
 
 /*
  * Generalized Rounding Routines
- *
+ 
  * Genround()
  *
  * args:
@@ -375,6 +375,10 @@ char* Canonicalize_unicode(const char *charset, char *inbuf, int *bytes_converte
 uint64_t UNF1 (UNFldouble n, int digits, uint64_t previous, int miss) {
 	#ifdef FORCELOCALE
 	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        if (!oldlocale) {
+          oldlocale = setlocale(LC_ALL, "C");
+        }
+
         int ormode=fegetround();
         fesetround(FE_TONEAREST);
 	#endif 
@@ -410,6 +414,9 @@ uint64_t UNF1 (UNFldouble n, int digits, uint64_t previous, int miss) {
 uint64_t UNF1 (char *n, int digits, uint64_t previous, int miss) {
 	#ifdef FORCELOCALE
 	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        if (!oldlocale) {
+          oldlocale = setlocale(LC_ALL, "C");
+        }
         int ormode=fegetround();
         fesetround(FE_TONEAREST);
 	#endif
@@ -444,6 +451,9 @@ uint64_t UNF1 (char *n, int digits, uint64_t previous, int miss) {
 uint64_t UNF2 (UNFldouble n, int digits, uint64_t previous, int miss) {
 	#ifdef FORCELOCALE
 	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        if (!oldlocale) {
+          oldlocale = setlocale(LC_ALL, "C");
+        }
         int ormode=fegetround();
         fesetround(FE_TONEAREST);
 	#endif
@@ -482,6 +492,9 @@ uint64_t UNF2 (UNFldouble n, int digits, uint64_t previous, int miss) {
 uint64_t UNF2 (char *n, int digits, uint64_t previous, int miss) {
 	#ifdef FORCELOCALE
 	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        if (!oldlocale) {
+          oldlocale = setlocale(LC_ALL, "C");
+        }
         int ormode=fegetround();
         fesetround(FE_TONEAREST);
 	#endif
@@ -520,6 +533,9 @@ uint64_t UNF2 (char *n, int digits, uint64_t previous, int miss) {
 int UNF3 (char *n, int digits, md5_state_t *previous, int miss) {
 	#ifdef FORCELOCALE
 	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        if (!oldlocale) {
+          oldlocale = setlocale(LC_ALL, "C");
+        }
         int ormode=fegetround();
         fesetround(FE_TONEAREST);
 	#endif
@@ -564,6 +580,9 @@ int UNF3 (char *n, int digits, md5_state_t *previous, int miss) {
 int UNF3 (UNFldouble n, int digits, md5_state_t *previous, int miss) {
 	#ifdef FORCELOCALE
 	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        if (!oldlocale) {
+          oldlocale = setlocale(LC_ALL, "C");
+        }
         int ormode=fegetround();
         fesetround(FE_TONEAREST);
 	#endif
@@ -616,6 +635,9 @@ int UNF3 (UNFldouble n, int digits, md5_state_t *previous, int miss) {
 int UNF4 (char *n, int digits, sha256_context *previous, int miss) {
 	#ifdef FORCELOCALE
 	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        if (!oldlocale) {
+          oldlocale = setlocale(LC_ALL, "C");
+        }
         int ormode=fegetround();
         fesetround(FE_TONEAREST);
 	#endif
@@ -660,6 +682,9 @@ int UNF4 (char *n, int digits, sha256_context *previous, int miss) {
 int UNF4 (UNFldouble n, int digits, sha256_context *previous, int miss) {
 	#ifdef FORCELOCALE
 	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        if (!oldlocale) {
+          oldlocale = setlocale(LC_ALL, "C");
+        }
         int ormode=fegetround();
         fesetround(FE_TONEAREST);
 	#endif
