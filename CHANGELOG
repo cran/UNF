@@ -14,3 +14,6 @@
 - Set locale for sort order
 - Add vignette
 - Move citation
+
+1.05
+- fix bug in as.unf

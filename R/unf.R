@@ -165,11 +165,11 @@ as.unf<-function(char) {
 			} else  {
 			 	tmpdig = strsplit(tmp[3],",")[[1]]
 				if (length(tmpdig)==1) {
-					attr(ret[[1]],"ndigits")=tmpdig
-					attr(ret[[1]],"cdigits")=tmpdig
+					attr(ret[[i]],"ndigits")=tmpdig
+					attr(ret[[i]],"cdigits")=tmpdig
 				} else {		
-					attr(ret[[1]],"ndigits")=tmpdig[1]
-					attr(ret[[1]],"cdigits")=tmpdig[2]
+					attr(ret[[i]],"ndigits")=tmpdig[1]
+					attr(ret[[i]],"cdigits")=tmpdig[2]
 				}
 			}
 		}
