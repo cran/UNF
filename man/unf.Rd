@@ -1,17 +1,27 @@
 \name{unf}
 \alias{unf}
+\alias{as.unf}
+\alias{as.character.unf}
+\alias{unf2base64}
 \title{universal numeric fingerprint}
 \description{
 A universal numeric fingerprint is used to guarantee that a defined subset of data is substantively identical to a comparison subset. Two fingerprints will match if and only if the subset of data generating them are identical, when represented using a given number of significant digits.
 }
 \usage{
-	unf (data, digits=6, version=3)
+	unf (data, digits=10, version=3, sortColumnsByName=F,rowIndexVar=NULL)
+	unf2base64 (x)
+	as.character.unf(x)
+	as.unf(char)
 }
 
 \arguments{
 	\item{data}{A numeric or charactervector or data frame. Other types will be computed.}	
 	\item{digits}{number of digits used in rounding (for numeric values) or truncation (for characters) prior to applying cryptographic hash}
 	\item{version}{algorithmic version. Always use the same version of the algorithm to check a signature.}
+	\item{sortColumnsByName}{ a flag causing columns to be sorted, before UNF's are computed, which affects the summary() UNF value of the data, but not the individual UNF's of the vector. This is equivalent to unf(,df[sort(names(df)] }
+	\item{rowIndexVar}{ a vector of rowids. The resulting data will be sorted by this vector before the UNF's are computed. This will affect the UNF for each vector. This is equivalent to unf(df[order(rowIndexVar),] }
+	\item{x}{ a unf object, returned by \code{unf}}
+	\item{char}{ a character vector of UNF character strings}
 }
 \details{
 A UNF is created by rounding data values (or truncating strings)  to a known number of 
@@ -43,15 +53,16 @@ UNF libraries are available for standalone use, for use in C++, and for use with
 }
 
 \value{
-Returns a character string representing the UNF computed from the data.
+The \code{unf} function returns a UNF object which can be converted using \code{as.character} to a signature string.
+
 For example:
-	UNF:3:6:ZNQRI14053UZq389x0Bffg==
+	UNF:3:10:ZNQRI14053UZq389x0Bffg==
 
 This representation identifies the signature as a fingerprint, using version 3,
- of the algorithm,  computed to 6 significant digits. The segment following the final colon is the actual fingerprint in base64 encoded format.
+ of the algorithm,  computed to 10 significant digits. The segment following the final colon is the actual fingerprint in base64 encoded format.
 
-Note: to compare two UNF's, or sets of unfs, one often wants to compare only the base64 portion. Use \code{as.character} for this, which will extract the base64 portion.
-Use \code{summary} to produce a single UNF from set of vectors.
+Note: to compare two UNF's, or sets of unfs, one often wants to compare only the base64 portion. Use \code{unf2base64} for this, which will extract the base64 portion.
+Use \code{summary} to produce a single UNF from set of vectors, by computing a new UNF across the base64 strings. The order in which the set of vectors is important.
 
 
 }

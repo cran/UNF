@@ -22,7 +22,7 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 "unf" <-
-function(data, digits=6, version=3) {
+function(data, digits=10, version=3, sortColumnsByName=F,rowIndexVar=NULL) {
 
 	if (version!=3) {
 		warning("older versions of fingerprints are not recommended, current is version 3")
@@ -35,6 +35,14 @@ function(data, digits=6, version=3) {
 		warning("forcing to data frame")
 		data=as.data.frame(data)
 		len = length(data)
+	}
+
+	if (sortColumnsByName) {
+		df=df[,sort(names(df))]
+	}
+	
+	if(!is.null(rowIndexVar)) {
+		df=df[order(rowIndexVar),]
 	}
 
 	if (len==0) {
@@ -60,15 +68,52 @@ function(data, digits=6, version=3) {
 
 summary.unf<-function(object,...) {
 	if (length(object)==1) {
-		#return(attr(object[[1]],"base64"))
 		return(object)
 	} 
 		
 	sigs = as.character(sapply(object,attributes)["base64",])
-	return(unf(sigs))
-	#return(attr(unf(sigs,32,3)[[1]],"base64"));	
+	return(unf(sigs,digits=32))	
 }
 
+as.character.unf<-function(x) {
+	ret = character(length=length(x));
+	for (i in 1:length(x)) {
+	   ret[i]=paste("UNF",attr(x[[i]],"version"), attr(x[[i]],"digits"),
+		 attr(x[[i]],"base64") ,sep=":")  
+	}
+	return(ret)	
+}
+
+as.unf<-function(char) {
+	 if (!is.character(char)) {
+                warning("coercing to character string")
+		char=as.character(char)
+         }
+	ret = vector(mode="list",length=length(char));
+	for (i in 1:length(char)) {
+		if ( regexpr("^UNF:[0-9]+:([0-9]+):.*==",char[[i]],perl=TRUE)<0) {
+			warning("not a UNF");
+		} else {
+			tmp= strsplit(char[[i]],":");	
+			ret[[i]]=tmp[[1]][4]
+	        	class(ret[[i]])="unfV"
+        		attr(ret[[i]],"version")=tmp[[1]][2]
+        		attr(ret[[i]],"digits")=tmp[[1]][3]
+        		attr(ret[[i]],"base64")=tmp[[1]][4]
+			attr(ret[[i]],"isnested")=FALSE
+		}
+	}
+	class(ret)="unf"
+	return(ret)	
+}
+
+unf2base64<-function(x) {
+	ret = character(length=length(x))
+	for (i in 1:length(x)) {
+	   ret[i]= attr(x[[i]],"base64")
+	}
+	return(ret)	
+}
 
 "unfV" <-
 function(v, digits=6, version=3) {
@@ -141,11 +186,7 @@ function(v, digits=6, version=3) {
 }
 
 print.unf<-function(x,...) {
-	for (i in 1:length(x)) {
-	   print (paste("UNF",attr(x[[i]],"version"), attr(x[[i]],"digits"),
-		attr(x[[i]],"base64")
-		 ,sep=":") ) 
-	}
+	invisible(print(as.character(x),...));
 }
 
 "unfTest" <-
@@ -167,15 +208,16 @@ function(silent=TRUE) {
 		warning("Failed significance test 1.")
         }
    }
-   if (as.character(unf(x1))!=as.character(unf(x2,digits=5))) {
+   if (unf2base64(unf(x1))!=unf2base64(unf(x2,digits=5))) {
 	ret=FALSE
 	if (!silent) {
 		warning("Failed significance test 2.")
         }
    }
 	
-   cv = c(29,20,166,62,47,80,103,57,72,3,226,176,152,51,79,243)
-  if (sum(attr(unf(x1)[[1]],"fingerprint")!=cv)>0) {
+   #cv = c(29,20,166,62,47,80,103,57,72,3,226,176,152,51,79,243)
+  cv="HRSmPi9QZzlIA+KwmDNP8w==";
+  if (unf2base64(unf(x1))!=cv) {
 	ret=FALSE
 	if (!silent) {
 		warning("Failed replication.")
