@@ -81,20 +81,63 @@ int static IS_LITTLE_ENDIAN= check_little_endian();
  */
 
 
+#ifdef NOLONGDOUBLE
+char *Genround(double n, int digits ) {
+#else
 char *Genround(long double n, int digits ) {
+#endif
 	#ifdef FORCELOCALE
 	char *oldlocale;
 	#endif
 
 	char *buf = (char*) malloc(digits+20) ;
+	char *buf2 = (char*) malloc(digits+20) ;
 
 	#ifdef FORCELOCALE
 	oldlocale = setlocale(LC_ALL, "POSIX");
 	#endif 
-	sprintf(buf,"%+#.*Le\n", digits-1,  n);
 
-	//remove trailing zeros in the mantissa (can't just use %+$.*Lg )
-	int i,ep,zp;
+	#ifdef NOLONGDOUBLE
+	sprintf(buf,"%+#.*e\n", digits-1,  n);
+	#else
+	sprintf(buf,"%+#.*Le\n", digits-1,  n);
+	#endif
+
+	// Canonical form is 
+	//		- leading + or -
+	//		- leading digit
+	//		- decimal point
+	//		- up to digit-1 digits, no trailing zeros
+	//		- 'e' (lower-case e)
+	//		- '+' or '-'
+	//		- exponent digits, with no leading zeros
+	// E.g: +1.2e+1 -2.e+  +1.362e-17 +0.e+
+	//remove trailing zeros in the mantissa  (can't just use %+$.*Lg )
+	//remove leading zeros in the exponent
+	int i,j, mantissa_end, exponent_begin;
+	mantissa_end =(2+digits-1); 
+	while(buf[mantissa_end]=='0' && (mantissa_end >2)) {
+		mantissa_end--;
+	}
+	exponent_begin = 4+digits;
+	while (buf[exponent_begin]=='0') {
+		exponent_begin++;
+	}
+
+	for (i=0; i<= mantissa_end; i++) {
+		buf2[i]=buf[i];
+	}
+	buf2[i]='e';
+	buf2[i+1]=buf[digits+3];
+	j=i+2;		
+	for (i=exponent_begin; buf[i]!=0; i++) {
+		buf2[j]=buf[i];
+		j++;
+	}
+	buf2[j]='\0';
+	free(buf);
+
+	/*int i,ep,zp;
 	i = strlen(buf); ep=0; zp=0;
 	while (ep==0 && i>0) {
 		if (buf[i]=='e') { 
@@ -108,18 +151,17 @@ char *Genround(long double n, int digits ) {
 		i--;
 	}
 	if (ep!=zp) {
-		
 		char *buf2=(char *)malloc(strlen(buf)+1);
 		buf2=strncpy(buf2,buf,strlen(buf)+1);
 		buf[zp]='\0';
 		strcat(buf,buf2+ep);
 		free(buf2);
-	}
+	}*/
 
 	#ifdef FORCELOCALE
 	setlocale(LC_ALL, oldlocale );
 	#endif 
-	return(buf);
+	return(buf2);
 }
 
 
@@ -142,6 +184,27 @@ char *Genround(char *n, int digits) {
 
 /* these are simply wrappers around long double versions */
 
+#ifdef NOLONGDOUBLE
+char *Genround(long long int n, int digits ) {
+	return(Genround((double) n, digits));
+}
+
+char *Genround(short int n, int digits ) {
+	return(Genround((double) n, digits));
+}
+
+char *Genround(int n, int digits ) {
+	return(Genround((double) n, digits));
+}
+
+char *Genround(long int n, int digits ) {
+	return(Genround((double) n, digits));
+}
+
+char *Genround(float n, int digits ) {
+	return(Genround((double) n, digits));
+}
+#else
 char *Genround(long long int n, int digits ) {
 	return(Genround((long double) n, digits));
 }
@@ -165,6 +228,7 @@ char *Genround(double n, int digits ) {
 char *Genround(float n, int digits ) {
 	return(Genround((long double) n, digits));
 }
+#endif
 
 
 /*
@@ -318,7 +382,11 @@ char* Canonicalize_unicode(const char *charset, char *inbuf, int *bytes_converte
  *
  */
 
+#ifdef NOLONGDOUBLE
+uint64_t UNF1 (double n, int digits, uint64_t previous, int miss) {
+#else
 uint64_t UNF1 (long double n, int digits, uint64_t previous, int miss) {
+#endif
 	char *tmps, *tmpu=NULL;
 	int bytes_converted;
 	uint64_t r;
@@ -368,7 +436,11 @@ uint64_t UNF1 (char *n, int digits, uint64_t previous, int miss) {
 	return(r);
 }
 
+#ifdef NOLONGDOUBLE
+uint64_t UNF2 (double n, int digits, uint64_t previous, int miss) {
+#else
 uint64_t UNF2 (long double n, int digits, uint64_t previous, int miss) {
+#endif
 	char *tmps, *tmpu=NULL;
 	int bytes_converted;
 	const char *missv="\0\0\0"; int missl=3;
@@ -467,7 +539,11 @@ int UNF3 (char *n, int digits, md5_state_t *previous, int miss) {
 	return(1);
 }
 
+#ifdef NOLONGDOUBLE
+int UNF3 (double n, int digits, md5_state_t *previous, int miss) {
+#else
 int UNF3 (long double n, int digits, md5_state_t *previous, int miss) {
+#endif
 	char *tmps, *tmpu=NULL;
 	const char *missv="\0\0\0"; int missl=3;
 	int bytes_converted;
@@ -475,12 +551,21 @@ int UNF3 (long double n, int digits, md5_state_t *previous, int miss) {
 	if (!miss) {
 		tmps = Genround(n, digits);
 		#ifdef DEBUG
-		fprintf (stderr,"%s\n",tmps);
+		fprintf (stderr,"After Genround:%s:\n",tmps);
 		#endif
 		if (tmps == NULL) {
 			return (0);
 		}
 		tmpu = Canonicalize_unicode("ASCII", tmps, &bytes_converted);
+		#ifdef DEBUG
+		{ int i;
+		  fprintf (stderr, "UNICODE BYTES (%d): ", bytes_converted);
+		  for (i =0; i<bytes_converted; i++) {
+			fprintf(stderr, "%d,", (int) tmpu[i]);
+		  }
+		  fprintf (stderr, "\n");
+		}
+		#endif
 		free (tmps);
 		if (tmpu == NULL) {
 			return (0);

@@ -174,8 +174,8 @@ function(silent=TRUE) {
         }
    }
 	
-   cv = c(238,161,5,187,203,133,212,179,106,198,108,175,251,116,115,121)
-  if (sum(attr(unf(x1),"fingerprint")!=c)>0) {
+   cv = c(29,20,166,62,47,80,103,57,72,3,226,176,152,51,79,243);
+  if (sum(attr(unf(x1)[[1]],"fingerprint")!=cv)>0) {
 	ret=FALSE;
 	if (!silent) {
 		warning("Failed replication.");
