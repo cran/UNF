@@ -296,7 +296,7 @@ uint64_t CRC64(uint64_t previous , cbyte* sequence, int len){
  *
  */
 
-char* Canonicalize_unicode(const char *charset, char *inbuf, int *bytes_converted)
+char* Canonicalize_unicode(const char *charset, const char *dcharset, char *inbuf, int *bytes_converted)
 {
   char *wrptr, *inptr, *outbuf;
   size_t nconv,insize;
@@ -316,10 +316,10 @@ char* Canonicalize_unicode(const char *charset, char *inbuf, int *bytes_converte
   wrptr=outbuf;
   inptr=inbuf;
 
-  cd = iconv_open ( "UTF-32BE", charset); if (cd == (iconv_t) -1) {
+  cd = iconv_open ( dcharset, charset); if (cd == (iconv_t) -1) {
       if (errno == EINVAL)
-        fprintf(stderr, "conversion from '%s' to UTF-32BE  not available",
-               charset);
+        fprintf(stderr, "conversion from '%s' to %s  not available",
+               charset, dcharset);
       else
         perror ("iconv_open");
 
@@ -374,13 +374,7 @@ char* Canonicalize_unicode(const char *charset, char *inbuf, int *bytes_converte
 
 uint64_t UNF1 (UNFldouble n, int digits, uint64_t previous, int miss) {
 	#ifdef FORCELOCALE
-	char *oldlocale = setlocale(LC_ALL, "POSIX");
-        if (!oldlocale) {
-          oldlocale = setlocale(LC_ALL, "C");
-        }
-
-        int ormode=fegetround();
-        fesetround(FE_TONEAREST);
+	standard_locale(0);	
 	#endif 
 
 	char *tmps, *tmpu=NULL;
@@ -388,13 +382,13 @@ uint64_t UNF1 (UNFldouble n, int digits, uint64_t previous, int miss) {
 	uint64_t r;
 	
 	if (miss) {
-		tmpu = Canonicalize_unicode("ASCII", "miss", &bytes_converted);
+		tmpu = Canonicalize_unicode("ASCII", "UTF-32BE", "miss", &bytes_converted);
 	} else {
 		tmps = Genround(n, digits);
 		if (tmps == NULL) {
 			return (0);
 		}
-		tmpu = Canonicalize_unicode("ASCII", tmps, &bytes_converted);
+		tmpu = Canonicalize_unicode("ASCII", "UTF-32BE", tmps, &bytes_converted);
 		free (tmps);
 	} 
 
@@ -405,33 +399,27 @@ uint64_t UNF1 (UNFldouble n, int digits, uint64_t previous, int miss) {
 	r = Checksum_bytes(previous , (cbyte*) tmpu, bytes_converted);
 	free(tmpu);
 	#ifdef FORCELOCALE
-	setlocale(LC_ALL, oldlocale );
-        fesetround(ormode);
+	standard_locale(1);	
 	#endif 
 	return(r);
 }
 
 uint64_t UNF1 (char *n, int digits, uint64_t previous, int miss) {
 	#ifdef FORCELOCALE
-	char *oldlocale = setlocale(LC_ALL, "POSIX");
-        if (!oldlocale) {
-          oldlocale = setlocale(LC_ALL, "C");
-        }
-        int ormode=fegetround();
-        fesetround(FE_TONEAREST);
+	standard_locale(0);	
 	#endif
 	char *tmps, *tmpu;
 	int bytes_converted;
 	uint64_t r;
 	
 	if (miss) {
-		tmpu = Canonicalize_unicode("ASCII", "miss", &bytes_converted);
+		tmpu = Canonicalize_unicode("ASCII","UTF-32BE", "miss", &bytes_converted);
 	} else {
 		tmps = Genround(n, digits);
 		if (tmps == NULL) {
 			return (0);
 		}
-		tmpu = Canonicalize_unicode("ASCII", tmps, &bytes_converted);
+		tmpu = Canonicalize_unicode("ASCII", "UTF-32BE", tmps, &bytes_converted);
 		free (tmps);
 	} 
 
@@ -442,20 +430,14 @@ uint64_t UNF1 (char *n, int digits, uint64_t previous, int miss) {
 	r = Checksum_bytes(previous , (cbyte*) tmpu, bytes_converted);
 	free(tmpu);
 	#ifdef FORCELOCALE
-	setlocale(LC_ALL, oldlocale );
-        fesetround(ormode);
+	standard_locale(1);	
 	#endif 
 	return(r);
 }
 
 uint64_t UNF2 (UNFldouble n, int digits, uint64_t previous, int miss) {
 	#ifdef FORCELOCALE
-	char *oldlocale = setlocale(LC_ALL, "POSIX");
-        if (!oldlocale) {
-          oldlocale = setlocale(LC_ALL, "C");
-        }
-        int ormode=fegetround();
-        fesetround(FE_TONEAREST);
+	standard_locale(0);	
 	#endif
 	char *tmps, *tmpu=NULL;
 	int bytes_converted;
@@ -467,7 +449,7 @@ uint64_t UNF2 (UNFldouble n, int digits, uint64_t previous, int miss) {
 		if (tmps == NULL) {
 			return (0);
 		}
-		tmpu = Canonicalize_unicode("ASCII", tmps, &bytes_converted);
+		tmpu = Canonicalize_unicode("ASCII", "UTF-32BE", tmps, &bytes_converted);
 		free (tmps);
 		if (tmpu == NULL) {
 			return (0);
@@ -483,20 +465,14 @@ uint64_t UNF2 (UNFldouble n, int digits, uint64_t previous, int miss) {
 		free(tmpu);
 	}
 	#ifdef FORCELOCALE
-	setlocale(LC_ALL, oldlocale );
-        fesetround(ormode);
+	standard_locale(1);	
 	#endif 
 	return(r);
 }
 
 uint64_t UNF2 (char *n, int digits, uint64_t previous, int miss) {
 	#ifdef FORCELOCALE
-	char *oldlocale = setlocale(LC_ALL, "POSIX");
-        if (!oldlocale) {
-          oldlocale = setlocale(LC_ALL, "C");
-        }
-        int ormode=fegetround();
-        fesetround(FE_TONEAREST);
+	standard_locale(0);	
 	#endif
 	char *tmps, *tmpu=NULL;
 	int bytes_converted;
@@ -508,7 +484,7 @@ uint64_t UNF2 (char *n, int digits, uint64_t previous, int miss) {
 		if (tmps == NULL) {
 			return (0);
 		}
-		tmpu = Canonicalize_unicode("ASCII", tmps, &bytes_converted);
+		tmpu = Canonicalize_unicode("ASCII", "UTF-32BE", tmps, &bytes_converted);
 		free (tmps);
 		if (tmpu == NULL) {
 			return (0);
@@ -524,20 +500,14 @@ uint64_t UNF2 (char *n, int digits, uint64_t previous, int miss) {
 		free(tmpu);
 	}
 	#ifdef FORCELOCALE
-	setlocale(LC_ALL, oldlocale );
-        fesetround(ormode);
+	standard_locale(1);	
 	#endif 
 	return(r);
 }
 
 int UNF3 (char *n, int digits, md5_state_t *previous, int miss) {
 	#ifdef FORCELOCALE
-	char *oldlocale = setlocale(LC_ALL, "POSIX");
-        if (!oldlocale) {
-          oldlocale = setlocale(LC_ALL, "C");
-        }
-        int ormode=fegetround();
-        fesetround(FE_TONEAREST);
+	standard_locale(0);	
 	#endif
 	char *tmps, *tmpu=NULL;
 	const char *missv="\0\0\0"; int missl=3;
@@ -552,7 +522,7 @@ int UNF3 (char *n, int digits, md5_state_t *previous, int miss) {
 		if (tmps == NULL) {
 			return (0);
 		}
-		tmpu = Canonicalize_unicode("ASCII", tmps, &bytes_converted);
+		tmpu = Canonicalize_unicode("ASCII", "UTF-32BE", tmps, &bytes_converted);
 		free (tmps);
 		if (tmpu == NULL) {
 			return (0);
@@ -571,20 +541,14 @@ int UNF3 (char *n, int digits, md5_state_t *previous, int miss) {
 		free(tmpu);
 	}
 	#ifdef FORCELOCALE
-	setlocale(LC_ALL, oldlocale );
-        fesetround(ormode);
+	standard_locale(1);	
 	#endif 
 	return(1);
 }
 
 int UNF3 (UNFldouble n, int digits, md5_state_t *previous, int miss) {
 	#ifdef FORCELOCALE
-	char *oldlocale = setlocale(LC_ALL, "POSIX");
-        if (!oldlocale) {
-          oldlocale = setlocale(LC_ALL, "C");
-        }
-        int ormode=fegetround();
-        fesetround(FE_TONEAREST);
+	standard_locale(0);	
 	#endif
 	char *tmps, *tmpu=NULL;
 	const char *missv="\0\0\0"; int missl=3;
@@ -598,7 +562,7 @@ int UNF3 (UNFldouble n, int digits, md5_state_t *previous, int miss) {
 		if (tmps == NULL) {
 			return (0);
 		}
-		tmpu = Canonicalize_unicode("ASCII", tmps, &bytes_converted);
+		tmpu = Canonicalize_unicode("ASCII", "UTF-32BE", tmps, &bytes_converted);
 		#ifdef DEBUG
 		{ int i;
 		  fprintf (stderr, "UNICODE BYTES (%d): ", bytes_converted);
@@ -626,20 +590,14 @@ int UNF3 (UNFldouble n, int digits, md5_state_t *previous, int miss) {
 		free(tmpu);
 	}
 	#ifdef FORCELOCALE
-	setlocale(LC_ALL, oldlocale );
-        fesetround(ormode);
+	standard_locale(1);	
 	#endif 
 	return(1);
 }
 
-int UNF4 (char *n, int digits, sha256_context *previous, int miss) {
+int UNF4int (char *n, int digits, sha256_context *previous, int miss, const char *dchars) {
 	#ifdef FORCELOCALE
-	char *oldlocale = setlocale(LC_ALL, "POSIX");
-        if (!oldlocale) {
-          oldlocale = setlocale(LC_ALL, "C");
-        }
-        int ormode=fegetround();
-        fesetround(FE_TONEAREST);
+	standard_locale(0);	
 	#endif
 	char *tmps, *tmpu=NULL;
 	const char *missv="\0\0\0"; int missl=3;
@@ -654,7 +612,7 @@ int UNF4 (char *n, int digits, sha256_context *previous, int miss) {
 		if (tmps == NULL) {
 			return (0);
 		}
-		tmpu = Canonicalize_unicode("ASCII", tmps, &bytes_converted);
+		tmpu = Canonicalize_unicode("ASCII", dchars, tmps, &bytes_converted);
 		free (tmps);
 		if (tmpu == NULL) {
 			return (0);
@@ -673,20 +631,14 @@ int UNF4 (char *n, int digits, sha256_context *previous, int miss) {
 		free(tmpu);
 	}
 	#ifdef FORCELOCALE
-	setlocale(LC_ALL, oldlocale );
-        fesetround(ormode);
+	standard_locale(1);	
 	#endif 
 	return(1);
 }
 
-int UNF4 (UNFldouble n, int digits, sha256_context *previous, int miss) {
+int UNF4int (UNFldouble n, int digits, sha256_context *previous, int miss, const char *dchars) {
 	#ifdef FORCELOCALE
-	char *oldlocale = setlocale(LC_ALL, "POSIX");
-        if (!oldlocale) {
-          oldlocale = setlocale(LC_ALL, "C");
-        }
-        int ormode=fegetround();
-        fesetround(FE_TONEAREST);
+	standard_locale(0);	
 	#endif
 	char *tmps, *tmpu=NULL;
 	const char *missv="\0\0\0"; int missl=3;
@@ -700,7 +652,7 @@ int UNF4 (UNFldouble n, int digits, sha256_context *previous, int miss) {
 		if (tmps == NULL) {
 			return (0);
 		}
-		tmpu = Canonicalize_unicode("ASCII", tmps, &bytes_converted);
+		tmpu = Canonicalize_unicode("ASCII", dchars,tmps, &bytes_converted);
 		#ifdef DEBUG
 		{ int i;
 		  fprintf (stderr, "UNICODE BYTES (%d): ", bytes_converted);
@@ -728,11 +680,24 @@ int UNF4 (UNFldouble n, int digits, sha256_context *previous, int miss) {
 		free(tmpu);
 	}
 	#ifdef FORCELOCALE
-	setlocale(LC_ALL, oldlocale );
-        fesetround(ormode);
+	standard_locale(0);	
 	#endif 
 	return(1);
 }
+
+int UNF4(char *n, int digits, sha256_context *previous, int miss) {
+	return(UNF4int(n,digits,previous,miss,"UTF-32BE"));
+}
+int UNF4(UNFldouble n, int digits, sha256_context *previous, int miss) {
+	return(UNF4int(n,digits,previous,miss,"UTF-32BE"));
+}
+int UNF4_1(char *n, int digits, sha256_context *previous, int miss) {
+	return(UNF4int(n,digits,previous,miss,"UTF-8"));
+}
+int UNF4_1(UNFldouble n, int digits, sha256_context *previous, int miss) {
+	return(UNF4int(n,digits,previous,miss,"UTF-8"));
+}
+
 
 /*
  * Utility Routines
@@ -871,3 +836,24 @@ long int myhtonl(long int x) {
      }
      return(x);
 }
+
+/*
+	Locale setup 
+*/
+
+void standard_locale(int restore) {
+   static char *oldlocale;
+   static int ormode;
+   if (restore) {
+        setlocale(LC_ALL, oldlocale);
+        fesetround(ormode);
+   } else {
+        oldlocale = setlocale(LC_ALL, "POSIX");
+        if (!oldlocale) {
+          oldlocale= setlocale(LC_ALL, "C");
+        }
+        ormode=fegetround();
+        fesetround(FE_TONEAREST);
+   }
+}
+

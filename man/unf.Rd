@@ -10,7 +10,7 @@ A universal numeric fingerprint is used to guarantee that a defined subset of da
 \usage{
        unf(data, digits = NULL, ndigits = { if (is.null(digits))
                  { 8 } else (digits)}, cdigits = { if (is.null(digits))
-                 { 128 } else (digits)}, version = 4, rowIndexVar =
+                 { 128 } else (digits)}, version = 4.1, rowIndexVar =
                  NULL, rowOrder = { if (is.null(rowIndexVar)) { NULL }
                  else { order(rowIndexVar) }})
 	unf2base64 (x)

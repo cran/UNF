@@ -63,18 +63,21 @@ char *Genround(float , int ) ;
 
 uint64_t Checksum_bytes(uint64_t , cbyte* , int );
 uint64_t CRC64(uint64_t , cbyte* , int );
-char* Canonicalize_unicode(const char*, char*, int*);
+char* Canonicalize_unicode(const char*, const char*, char*, int*);
 
 uint64_t UNF1 (UNFldouble , int , uint64_t , int ) ;
 uint64_t UNF2 (UNFldouble , int , uint64_t , int ) ;
 int UNF3 (UNFldouble , int , md5_state_t* , int ) ;
 int UNF4 (UNFldouble , int , sha256_context* , int ) ;
+int UNF4_1 (UNFldouble , int , sha256_context* , int ) ;
 
 uint64_t UNF1 (char* , int , uint64_t , int ) ;
 int UNF3 (char*, int , md5_state_t* , int );
 int UNF4 (char*, int , sha256_context* , int );
+int UNF4_1 (char*, int , sha256_context* , int );
 uint64_t UNF2 (char* , int , uint64_t , int ) ;
 int UNF_init(int) ;
 
 void tobase64(unsigned char *out, md5_byte_t *in, int inlen);
 UNFldouble sigDig (UNFldouble n, int digits);
+void standard_locale(int restore);

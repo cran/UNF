@@ -26,11 +26,16 @@
 #include "unf.h"
 #include "R.h" /* use -I/path/to/R/includes to find it*/
 
+
 // extern "C" so that R can see the functions...
 extern "C" {
 
+
 void R_unf1_double(double v[], int *nv, int *digits, double *result,
 	char **result_base64 ) {
+
+  standard_locale(0);
+       
    int i;
    uint64_t fingerprint=0;
 
@@ -39,6 +44,8 @@ void R_unf1_double(double v[], int *nv, int *digits, double *result,
    }
    *result = (double) fingerprint;
    tobase64((unsigned char *) result_base64[0], (md5_byte_t *) &fingerprint, sizeof(uint64_t));
+
+  standard_locale(1);
 }
 
 void R_unf2_double(double v[], int *nv, int *digits, double *result,
@@ -46,11 +53,13 @@ void R_unf2_double(double v[], int *nv, int *digits, double *result,
    int i;
    uint64_t fingerprint=0;
 
+  standard_locale(0);
    for (i=0; i < *nv; i++) {
 	fingerprint = UNF2(v[i], *digits, fingerprint, ISNA(v[i]));
    }
    *result = (double) fingerprint;
    tobase64((unsigned char *) result_base64[0], (md5_byte_t *) &fingerprint, sizeof(uint64_t));
+  standard_locale(1);
 }
 
 void R_unf3_double(double v[], int *nv, int *digits, int result[], 
@@ -60,6 +69,7 @@ void R_unf3_double(double v[], int *nv, int *digits, int result[],
    md5_byte_t digest[16];
 
 
+  standard_locale(0);
    md5_init(&state);
    for (i=0; i < *nv; i++) {
 	UNF3(v[i], *digits, &state, ISNA(v[i]));
@@ -69,6 +79,7 @@ void R_unf3_double(double v[], int *nv, int *digits, int result[],
 	result[i]= digest[i];
    }
    tobase64((unsigned char *) result_base64[0], digest, 16);
+  standard_locale(1);
 }
 
 void R_unf4_double(double v[], int *nv, int *digits, int result[], 
@@ -78,6 +89,7 @@ void R_unf4_double(double v[], int *nv, int *digits, int result[],
    uint8 digest[32];
 
 
+  standard_locale(0);
    sha256_starts(&state);
    for (i=0; i < *nv; i++) {
 	UNF4(v[i], *digits, &state, ISNA(v[i]));
@@ -87,6 +99,27 @@ void R_unf4_double(double v[], int *nv, int *digits, int result[],
 	result[i]= (int) digest[i];
    }
    tobase64((unsigned char *) result_base64[0], digest, 32);
+  standard_locale(1);
+}
+
+void R_unf4_1_double(double v[], int *nv, int *digits, int result[], 
+	char **result_base64) {
+   int i;
+   sha256_context state;
+   uint8 digest[32];
+
+
+  standard_locale(0);
+   sha256_starts(&state);
+   for (i=0; i < *nv; i++) {
+	UNF4_1(v[i], *digits, &state, ISNA(v[i]));
+   }
+   sha256_finish(&state, digest); 
+   for (i=0; i < 32; i++) {
+	result[i]= (int) digest[i];
+   }
+   tobase64((unsigned char *) result_base64[0], digest, 32);
+  standard_locale(1);
 }
 
 void R_unf1_char(char *v[], int miss[], int *nv, int *digits, double *result,
@@ -94,11 +127,13 @@ void R_unf1_char(char *v[], int miss[], int *nv, int *digits, double *result,
    int i;
    uint64_t fingerprint=0;
 
+  standard_locale(0);
    for (i=0; i < *nv; i++) {
 	fingerprint = UNF1(v[i], *digits, fingerprint, miss[i]);
    }
    *result = (double) fingerprint;
    tobase64((unsigned char *) result_base64[0], (md5_byte_t *) &fingerprint, sizeof(uint64_t));
+  standard_locale(1);
 }
 
 void R_unf2_char(char *v[], int miss[], int *nv, int *digits, double *result,
@@ -106,11 +141,13 @@ void R_unf2_char(char *v[], int miss[], int *nv, int *digits, double *result,
    int i;
    uint64_t fingerprint=0;
 
+  standard_locale(0);
    for (i=0; i < *nv; i++) {
 	fingerprint = UNF2(v[i], *digits, fingerprint, miss[i]);
    }
    *result = (double) fingerprint;
    tobase64((unsigned char *) result_base64[0], (md5_byte_t *) &fingerprint, sizeof(uint64_t));
+  standard_locale(1);
 }
 
 void R_unf3_char(char *v[], int miss[], int *nv, int *digits, int result[],
@@ -119,6 +156,7 @@ void R_unf3_char(char *v[], int miss[], int *nv, int *digits, int result[],
    md5_state_t state;
    md5_byte_t digest[16];
 
+  standard_locale(0);
    md5_init(&state);
    for (i=0; i < *nv; i++) {
 	UNF3(v[i], *digits, &state, miss[i]);
@@ -128,6 +166,7 @@ void R_unf3_char(char *v[], int miss[], int *nv, int *digits, int result[],
 	result[i]= digest[i];
    }
    tobase64((unsigned char *) result_base64[0], digest, 16);
+  standard_locale(1);
 }
 
 void R_unf4_char(char *v[], int miss[], int *nv, int *digits, int result[],
@@ -136,6 +175,7 @@ void R_unf4_char(char *v[], int miss[], int *nv, int *digits, int result[],
    sha256_context state;
    uint8 digest[32];
 
+  standard_locale(0);
    sha256_starts(&state);
    for (i=0; i < *nv; i++) {
 	UNF4(v[i], *digits, &state, miss[i]);
@@ -145,6 +185,26 @@ void R_unf4_char(char *v[], int miss[], int *nv, int *digits, int result[],
 	result[i]= (int) digest[i];
    }
    tobase64((unsigned char *) result_base64[0], digest, 32);
+  standard_locale(1);
+}
+
+void R_unf4_1_char(char *v[], int miss[], int *nv, int *digits, int result[],
+	char **result_base64 ) {
+   int i;
+   sha256_context state;
+   uint8 digest[32];
+
+  standard_locale(0);
+   sha256_starts(&state);
+   for (i=0; i < *nv; i++) {
+	UNF4_1(v[i], *digits, &state, miss[i]);
+   }
+   sha256_finish(&state, digest); 
+   for (i=0; i < 32; i++) {
+	result[i]= (int) digest[i];
+   }
+   tobase64((unsigned char *) result_base64[0], digest, 32);
+  standard_locale(1);
 }
 
 } // extern "C"

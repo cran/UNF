@@ -20,3 +20,6 @@
 
 1.06
 - workaround for lack of posix locale under windows
+
+1.07
+- Protocol v. 4.1, perf, as.unf bug
