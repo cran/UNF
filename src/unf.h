@@ -22,8 +22,11 @@
 #include <errno.h> 
 #include <string.h>
 #include <strings.h>
+#include <math.h>
+#include <fenv.h>
 
 #include "md5.h"
+#include "sha256.h"
 
 /*
  * TYPEDEFS 
@@ -65,10 +68,13 @@ char* Canonicalize_unicode(const char*, char*, int*);
 uint64_t UNF1 (UNFldouble , int , uint64_t , int ) ;
 uint64_t UNF2 (UNFldouble , int , uint64_t , int ) ;
 int UNF3 (UNFldouble , int , md5_state_t* , int ) ;
+int UNF4 (UNFldouble , int , sha256_context* , int ) ;
 
 uint64_t UNF1 (char* , int , uint64_t , int ) ;
 int UNF3 (char*, int , md5_state_t* , int );
+int UNF4 (char*, int , sha256_context* , int );
 uint64_t UNF2 (char* , int , uint64_t , int ) ;
 int UNF_init(int) ;
 
 void tobase64(unsigned char *out, md5_byte_t *in, int inlen);
+UNFldouble sigDig (UNFldouble n, int digits);

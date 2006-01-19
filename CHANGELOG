@@ -1,0 +1,11 @@
+1.02
+
+- Standardizes representation of non-finite numbers as : +inf, -inf, +nan
+- Allows for separate specification of rounding levels for character and numeric
+  vectors
+- Composite unfs are sorted by unf value which disambiguates ordering
+- Discovered that sprintf() internal rounding behavior is inconsistent.
+  Now use explicit rounding using IEE 753 "round to nearest".
+- UNF Version 4, replaces MD5 with SHA256 algorithm
+- check with codetools()
+- remove -static (request from Brian Ripley)

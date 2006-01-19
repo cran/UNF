@@ -71,6 +71,24 @@ void R_unf3_double(double v[], int *nv, int *digits, int result[],
    tobase64((unsigned char *) result_base64[0], digest, 16);
 }
 
+void R_unf4_double(double v[], int *nv, int *digits, int result[], 
+	char **result_base64) {
+   int i;
+   sha256_context state;
+   uint8 digest[32];
+
+
+   sha256_starts(&state);
+   for (i=0; i < *nv; i++) {
+	UNF4(v[i], *digits, &state, ISNA(v[i]));
+   }
+   sha256_finish(&state, digest); 
+   for (i=0; i < 32; i++) {
+	result[i]= (int) digest[i];
+   }
+   tobase64((unsigned char *) result_base64[0], digest, 32);
+}
+
 void R_unf1_char(char *v[], int miss[], int *nv, int *digits, double *result,
 	char **result_base64 ) {
    int i;
@@ -110,6 +128,23 @@ void R_unf3_char(char *v[], int miss[], int *nv, int *digits, int result[],
 	result[i]= digest[i];
    }
    tobase64((unsigned char *) result_base64[0], digest, 16);
+}
+
+void R_unf4_char(char *v[], int miss[], int *nv, int *digits, int result[],
+	char **result_base64 ) {
+   int i;
+   sha256_context state;
+   uint8 digest[32];
+
+   sha256_starts(&state);
+   for (i=0; i < *nv; i++) {
+	UNF4(v[i], *digits, &state, miss[i]);
+   }
+   sha256_finish(&state, digest); 
+   for (i=0; i < 32; i++) {
+	result[i]= (int) digest[i];
+   }
+   tobase64((unsigned char *) result_base64[0], digest, 32);
 }
 
 } // extern "C"

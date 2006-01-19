@@ -21,14 +21,45 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"unf" <-
-function(data, digits=10, version=3, sortColumnsByName=F,rowIndexVar=NULL) {
+v4DefaultNdig = 8;
+v4DefaultCdig = 128;
 
-	if (version!=3) {
-		warning("older versions of fingerprints are not recommended, current is version 3")
+"unf" <-
+function(data, 
+	digits=NULL,
+	ndigits= {if (is.null(digits)) {6} else (digits)}, 
+	cdigits= {if (is.null(digits)) {128} else (digits)}, 
+	version=4, 
+	rowIndexVar=NULL,
+	rowOrder={if(is.null(rowIndexVar)) {NULL} else {order(rowIndexVar)}}
+) {
+
+
+	if (version<3) {
+		warning("older versions of fingerprints are not recommended, current is version 4")
 	} 
+
+	ndigits=as.integer(ndigits)
+	cdigits=as.integer(cdigits)
+	if (ndigits<1) {
+		warning("ndigits can't be less then 1")
+		ndigits =1
+	}
+	if (ndigits>15) {
+		warning("ndigits can't be greater than 15")
+		ndigits = 15
+	}
+	if (cdigits<1) {
+		warning("cdigits can't be less then 1")
+		cdigits = 1
+	}
+
 	if (is.vector(data)) {
 		len = 1
+	} else if (is.factor(data)) {
+		len = 1
+		data=as.character(data)
+		warning("forcing to character")
 	} else if (is.data.frame(data)) {
 		len = length(data)
 	} else {
@@ -37,28 +68,22 @@ function(data, digits=10, version=3, sortColumnsByName=F,rowIndexVar=NULL) {
 		len = length(data)
 	}
 
-	if (sortColumnsByName) {
-		df=df[,sort(names(df))]
-	}
-	
-	if(!is.null(rowIndexVar)) {
-		df=df[order(rowIndexVar),]
-	}
-
 	if (len==0) {
 		warning ("NULL data")
 		return(NULL)
 	}
-	if (is.factor(data)) {
-		data = as.character(data)
+
+	# canonicalize row order
+	if(!is.null(rowOrder)) {
+		df=df[rowOrder,]
 	}
 
 	r = vector(mode="list", length=len)
 	if (is.vector(data)) {
-		r[[1]] =  unfV(data,digits,version)
+		r[[1]] =  unfV(data,ndigits=ndigits,cdigits=cdigits,version=version)
 	} else {
 		for ( i in 1:len) {
-			r[[i]] =  unfV(data[[i]],digits,version)
+			r[[i]] =  unfV(data[[i]],ndigits=ndigits,cdigits=cdigits,version)
         	}
 	}
 
@@ -71,15 +96,42 @@ summary.unf<-function(object,...) {
 		return(object)
 	} 
 		
-	sigs = as.character(sapply(object,attributes)["base64",])
-	return(unf(sigs,digits=32))	
+	unfattr = sapply(object,attributes)
+	sigs = unlist(unfattr["base64",])
+	cdigits = unlist(unfattr["cdigits",])
+	ndigits = unlist(unfattr["ndigits",])
+	versions= unlist(unfattr["version",])
+	ret = unf(sort(sigs),cdigits=256,version=versions[1])	
+	attr(ret[[1]],"cdigits")=cdigits[1];
+	attr(ret[[1]],"ndigits")=ndigits[1];
+	if ((sum(ndigits!=ndigits[1])>0) || (sum(cdigits!=cdigits[1])>0) || 
+		(sum(versions!=versions[1])>0))
+		{
+		warning("UNF's being combined have different precisions or versions")
+		if (sum(ndigits!=ndigits[1])>0)  {
+			attr(ret[[1]],"ndigits")="mixed"	
+		} 
+		if (sum(cdigits!=cdigits[1])>0)  {
+			attr(ret[[1]],"cdigits")="mixed"	
+		} 
+	}
+
+	return(ret)
 }
 
 as.character.unf<-function(x) {
 	ret = character(length=length(x));
 	for (i in 1:length(x)) {
-	   ret[i]=paste("UNF",attr(x[[i]],"version"), attr(x[[i]],"digits"),
-		 attr(x[[i]],"base64") ,sep=":")  
+	   version = attr(x[[i]],"version")
+	   ret[i]=paste("UNF:",attr(x[[i]],"version"),":",
+		 if ( (version!=4) || (attr(x[[i]],"ndigits")!=v4DefaultNdig)
+			 || (attr(x[[i]],"cdigits")!=v4DefaultCdig)
+			) {
+			paste( attr(x[[i]],"ndigits"), "," , 
+		 	attr(x[[i]],"cdigits"),":",
+			sep="")
+		},
+		 attr(x[[i]],"base64") ,sep="")  
 	}
 	return(ret)	
 }
@@ -91,16 +143,30 @@ as.unf<-function(char) {
          }
 	ret = vector(mode="list",length=length(char));
 	for (i in 1:length(char)) {
-		if ( regexpr("^UNF:[0-9]+:([0-9]+):.*==",char[[i]],perl=TRUE)<0) {
-			warning("not a UNF");
+		if ( regexpr("^UNF:[0-9a-zA-Z]+:([0-9]+(,[0-9]+)*:)?[a-zA-Z1-9]+=?=?",char[[i]],perl=TRUE)<0) {
+			warning("does not appear to be a UNF")
+			return(NULL)
 		} else {
-			tmp= strsplit(char[[i]],":");	
-			ret[[i]]=tmp[[1]][4]
+			tmp= strsplit(char[[i]],":")[[1]];	
+			ret[[i]]=tmp[length(tmp)]
 	        	class(ret[[i]])="unfV"
-        		attr(ret[[i]],"version")=tmp[[1]][2]
-        		attr(ret[[i]],"digits")=tmp[[1]][3]
-        		attr(ret[[i]],"base64")=tmp[[1]][4]
+        		attr(ret[[i]],"base64")=tmp[length(tmp)]
+        		attr(ret[[i]],"version")=tmp[2]
 			attr(ret[[i]],"isnested")=FALSE
+
+			if (length(tmp)==3) {
+        			attr(ret[[i]],"ndigits")=v4DefaultNdig
+        			attr(ret[[i]],"cdigits")=v4DefaultCdig
+			} else  {
+			 	tmpdig = strsplit(tmp[3],",")[[1]]
+				if (length(tmpdig)==1) {
+					attr(ret[[1]],"ndigits")=tmpdig
+					attr(ret[[1]],"cdigits")=tmpdig
+				} else {		
+					attr(ret[[1]],"ndigits")=tmpdig[1]
+					attr(ret[[1]],"cdigits")=tmpdig[2]
+				}
+			}
 		}
 	}
 	class(ret)="unf"
@@ -116,22 +182,30 @@ unf2base64<-function(x) {
 }
 
 "unfV" <-
-function(v, digits=6, version=3) {
-	INITSTRING = sprintf("%0.20i",as.integer(0))
+function(v, 
+	ndigits= NULL,
+	cdigits= NULL,
+	version=4 ) {
+
+	INITSTRING = sprintf("%0.64i",as.integer(0))
+	if (is.null(v) || is.null(ndigits) || is.null(cdigits)) {
+		warning("unV called with NULL arguments")
+		return(NULL)
+	}
 
 	if (version == 1) {
 		if (is.character(v)) {
 		    r = .C("R_unf1_char", NAOK=TRUE, 
 			PACKAGE="UNF", 
 			as.character(v), as.integer(is.na(v)), 
-			as.integer(length(v)), as.integer(digits), 
+			as.integer(length(v)), as.integer(cdigits), 
 			fingerprint =double(length=1),
 			base64= INITSTRING 
 			)
 		} else {
 		    r = .C("R_unf1_double", NAOK=TRUE, as.double(v), as.integer(length(v)),
 			PACKAGE="UNF", 
-			as.integer(digits), 
+			as.integer(ndigits), 
 			fingerprint=double(length=1),
 			base64= INITSTRING 
 			)
@@ -141,35 +215,54 @@ function(v, digits=6, version=3) {
 		    r = .C("R_unf2_char", NAOK=TRUE, 
 			PACKAGE="UNF", 
 			as.character(v), as.integer(is.na(v)), 
-			as.integer(length(v)), as.integer(digits), 
+			as.integer(length(v)), as.integer(cdigits), 
 			fingerprint =double(length=1),
 			base64= INITSTRING 
 			)
 		} else {
 		    r = .C("R_unf2_double", as.double(v), as.integer(length(v)),
 			PACKAGE="UNF", 
-			as.integer(digits), NAOK=TRUE,
+			as.integer(ndigits), NAOK=TRUE,
 			fingerprint=double(length=1),
 			base64= INITSTRING 
 			)
 		}
-	} else {
-		if (version!=3)  {
-			warning("unsupported fingerprint version, using version 3")
-		}
+	} else if (version==3) {
 		if (is.character(v)) {
 		   r = .C("R_unf3_char",  NAOK=TRUE,
 			PACKAGE="UNF", 
 			as.character(v), as.integer(is.na(v)),
-			 as.integer(length(v)), as.integer(digits), 
+			 as.integer(length(v)), as.integer(cdigits), 
 			fingerprint =integer(length=16),
 			base64= INITSTRING 
 			)
 		} else {
 		   r = .C("R_unf3_double", PACKAGE="UNF", 
 			NAOK=TRUE, as.double(v), as.integer(length(v)),
-			as.integer(digits), 
+			as.integer(ndigits), 
+			fingerprint =integer(length=32),
+			base64= INITSTRING
+			)
+		}
+	} else {
+		if (version!=4 && version !="4a" )  {
+			warning("unsupported fingerprint version, using version 4, resetting default digits")
+			version = 4
+			
+		}
+		if (is.character(v)) {
+		   r = .C("R_unf4_char",  NAOK=TRUE,
+			PACKAGE="UNF", 
+			as.character(v), as.integer(is.na(v)),
+			 as.integer(length(v)), as.integer(cdigits), 
 			fingerprint =integer(length=16),
+			base64= INITSTRING 
+			)
+		} else {
+		   r = .C("R_unf4_double", PACKAGE="UNF", 
+			NAOK=TRUE, as.double(v), as.integer(length(v)),
+			as.integer(ndigits), 
+			fingerprint =integer(length=32),
 			base64= INITSTRING
 			)
 		}
@@ -177,7 +270,8 @@ function(v, digits=6, version=3) {
 	
 	sig = r$base64;	
 	class(sig)="unfV"
-	attr(sig,"digits")=digits
+	attr(sig,"ndigits")=ndigits
+	attr(sig,"cdigits")=cdigits
 	attr(sig,"version")=version
 	attr(sig,"isnested")=FALSE
 	attr(sig,"base64")=r$base64
@@ -189,6 +283,25 @@ print.unf<-function(x,...) {
 	invisible(print(as.character(x),...));
 }
 
+signifz<-function(x,digits=6) {
+  if (class(x)=="data.frame") {
+	ret=as.data.frame(sapply(x,function(y)signifz(y,digits=digits)
+		,simplify=F))
+	rownames(ret)=rownames(x)
+	return(ret)
+  }
+  magnitude = floor(log10(abs(x)))
+  scale = 10^(digits-magnitude-1)
+  signs =  sign(x)
+
+  ret=x
+  g0 = which(signs>=0)
+  ret[g0]= floor(x[g0]*scale[g0])/scale[g0]
+  l0 = which(signs<0) 
+  ret[l0]=  ceiling(x[l0]*scale[l0])/scale[l0]
+  return(ret)
+}
+
 "unfTest" <-
 function(silent=TRUE) {
 	ret = TRUE
@@ -196,13 +309,13 @@ function(silent=TRUE) {
    x1 = 1:20
    x2 = x1 +.00001
 
-   if (as.character(unf(x1))==as.character(unf(x2))) {
+   if (unf2base64(unf(x1))==unf2base64(unf(x2))) {
 	ret=FALSE
 	if (!silent) {
 		warning("Failed discrimination test.")
         }
    }
-   if (as.character(unf(x1,digits=5))!=as.character(unf(x2,digits=5))) {
+   if (unf2base64(unf(x1,digits=5))!=unf2base64(unf(x2,digits=5))) {
 	ret=FALSE
 	if (!silent) {
 		warning("Failed significance test 1.")
@@ -215,9 +328,8 @@ function(silent=TRUE) {
         }
    }
 	
-   #cv = c(29,20,166,62,47,80,103,57,72,3,226,176,152,51,79,243)
   cv="HRSmPi9QZzlIA+KwmDNP8w==";
-  if (unf2base64(unf(x1))!=cv) {
+  if (unf2base64(unf(x1,version=3))!=cv) {
 	ret=FALSE
 	if (!silent) {
 		warning("Failed replication.")
@@ -225,10 +337,19 @@ function(silent=TRUE) {
   }
 
   cvs = "E8+DS5SG4CSoM7j8KAkC9A==";
-  if (unf2base64(summary(unf(as.data.frame(cbind(x1,x2)))))!=cvs) {
+  if (unf2base64(summary(unf(as.data.frame(cbind(x1,x2)),ndigits=10,version=3)))!=cvs) {
 	ret=FALSE
 	if (!silent) {
 		warning("Failed replication.")
+       }
+  }
+
+  cv3="PjAV6/R6Kdg0urKrDVDzfMPWJrsBn5FfOdZVr9W8Ybg="
+  if (  unf2base64(summary(unf(longley,digits=3))) != cv3 ||
+	unf2base64(summary(unf(signifz(longley,digits=3)))) != cv3) {
+	ret = FALSE
+	if (!silent) {
+		warning("Failed longley v 4")
        }
   }
 

@@ -28,7 +28,6 @@
 
 #include "unf.h"
 
-#define FORCELOCALE
 
 /*
  * TYPEDEFS 
@@ -80,23 +79,62 @@ int static IS_LITTLE_ENDIAN= check_little_endian();
  * Assumes Init routine has been called to set locale.
  */
 
+UNFldouble sigDig(UNFldouble n, int digits) {
+	#ifdef PEDANTIC
+        int magnitude = (int) floor(log10(fabs(n)));
+	#else
+        int magnitude = (int) floor(log10l(fabsl(n)));
+	#endif
+        double scale = pow(10, (digits-magnitude-1));
+	double ret;
+        //double ret =   rint(n * scale)/scale;
+	if ( n>=0 ) {
+		ret = floor(n * scale)/scale;
+	} else {
+		ret = ceil(n * scale)/scale;
+	}
+	#ifdef DEBUG
+	fprintf (stderr,"rescaled %Le\n",ret);
+	#endif
+        return(ret);
+}
 
 char *Genround(UNFldouble n, int digits ) {
-	#ifdef FORCELOCALE
-	char *oldlocale;
-	#endif
 
+	// STEP 1: non-finite numbers
 	char *buf = (char*) malloc(digits+20) ;
+    	if (finite(n)==0)  {
+                if (isnan(n)!=0) {
+                        sprintf(buf,"+nan\n");
+                } else if (isinf(n)==-1) {
+                        sprintf(buf,"-inf\n");
+                } else {
+                        sprintf(buf,"+inf\n");
+                }
+		return(buf);
+        }
+	
+	// STEP 2: finite numbers
 	char *buf2 = (char*) malloc(digits+20) ;
 
-	#ifdef FORCELOCALE
-	oldlocale = setlocale(LC_ALL, "POSIX");
+	#ifdef INACCURATE_SPRINTF
+	//printf is inaccurate, print an extra digit of 
+	// precision then truncate it
+	//n = sigDig(n,digits); // roundoff -- didn't work well
 	#endif 
 
 	#ifdef PEDANTIC
-	sprintf(buf,"%+#.*e\n", digits-1,  n);
+	   #ifdef INACCURATE_SPRINTF
+	   sprintf(buf,"%+#.*e\n", 14,  n);
+	   #else 
+	   sprintf(buf,"%+#.*e\n", digits-1,  n);
+	   #endif
 	#else
-	sprintf(buf,"%+#.*Le\n", digits-1,  n);
+	  #ifdef INACCURATE_SPRINTF
+	  sprintf(buf,"%+#.*Le\n", 14,  n);
+	  #else 
+	  sprintf(buf,"%+#.*Le\n", digits-1,  n);
+	  #endif
 	#endif
 
 	// Canonical form is 
@@ -115,7 +153,13 @@ char *Genround(UNFldouble n, int digits ) {
 	while(buf[mantissa_end]=='0' && (mantissa_end >2)) {
 		mantissa_end--;
 	}
+	#ifdef INACCURATE_SPRINTF
+	// sprintf is inaccurate, print an extra digit of 
+	// precision then truncate it
+	exponent_begin = 19;
+	#else
 	exponent_begin = 4+digits;
+	#endif
 	while (buf[exponent_begin]=='0') {
 		exponent_begin++;
 	}
@@ -124,7 +168,11 @@ char *Genround(UNFldouble n, int digits ) {
 		buf2[i]=buf[i];
 	}
 	buf2[i]='e';
+	#ifdef INACCURATE_SPRINTF
+	buf2[i+1]=buf[18];
+	#else
 	buf2[i+1]=buf[digits+3];
+	#endif
 	j=i+2;		
 	for (i=exponent_begin; buf[i]!=0; i++) {
 		buf2[j]=buf[i];
@@ -133,48 +181,14 @@ char *Genround(UNFldouble n, int digits ) {
 	buf2[j]='\0';
 	free(buf);
 
-	/*int i,ep,zp;
-	i = strlen(buf); ep=0; zp=0;
-	while (ep==0 && i>0) {
-		if (buf[i]=='e') { 
-			ep=i; 
-		}
-		i--;
-	}
-	zp=i+1;
-	while (buf[i]=='0' && i>0) {
-		zp=i; 
-		i--;
-	}
-	if (ep!=zp) {
-		char *buf2=(char *)malloc(strlen(buf)+1);
-		buf2=strncpy(buf2,buf,strlen(buf)+1);
-		buf[zp]='\0';
-		strcat(buf,buf2+ep);
-		free(buf2);
-	}*/
-
-	#ifdef FORCELOCALE
-	setlocale(LC_ALL, oldlocale );
-	#endif 
 	return(buf2);
 }
 
 
 char *Genround(char *n, int digits) {
-	#ifdef FORCELOCALE
-	char *oldlocale;
-	#endif
-
 	char *buf = (char*) malloc(digits+20) ;
 
-	#ifdef FORCELOCALE
-	oldlocale = setlocale(LC_ALL, "POSIX");
-	#endif
 	sprintf(buf,"%.*s\n", digits,  n);
-	#ifdef FORCELOCALE
-	setlocale(LC_ALL, oldlocale );
-	#endif
 	return(buf);
 }
 
@@ -359,6 +373,12 @@ char* Canonicalize_unicode(const char *charset, char *inbuf, int *bytes_converte
  */
 
 uint64_t UNF1 (UNFldouble n, int digits, uint64_t previous, int miss) {
+	#ifdef FORCELOCALE
+	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        int ormode=fegetround();
+        fesetround(FE_TONEAREST);
+	#endif 
+
 	char *tmps, *tmpu=NULL;
 	int bytes_converted;
 	uint64_t r;
@@ -380,10 +400,19 @@ uint64_t UNF1 (UNFldouble n, int digits, uint64_t previous, int miss) {
 
 	r = Checksum_bytes(previous , (cbyte*) tmpu, bytes_converted);
 	free(tmpu);
+	#ifdef FORCELOCALE
+	setlocale(LC_ALL, oldlocale );
+        fesetround(ormode);
+	#endif 
 	return(r);
 }
 
 uint64_t UNF1 (char *n, int digits, uint64_t previous, int miss) {
+	#ifdef FORCELOCALE
+	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        int ormode=fegetround();
+        fesetround(FE_TONEAREST);
+	#endif
 	char *tmps, *tmpu;
 	int bytes_converted;
 	uint64_t r;
@@ -405,10 +434,19 @@ uint64_t UNF1 (char *n, int digits, uint64_t previous, int miss) {
 
 	r = Checksum_bytes(previous , (cbyte*) tmpu, bytes_converted);
 	free(tmpu);
+	#ifdef FORCELOCALE
+	setlocale(LC_ALL, oldlocale );
+        fesetround(ormode);
+	#endif 
 	return(r);
 }
 
 uint64_t UNF2 (UNFldouble n, int digits, uint64_t previous, int miss) {
+	#ifdef FORCELOCALE
+	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        int ormode=fegetround();
+        fesetround(FE_TONEAREST);
+	#endif
 	char *tmps, *tmpu=NULL;
 	int bytes_converted;
 	const char *missv="\0\0\0"; int missl=3;
@@ -434,10 +472,19 @@ uint64_t UNF2 (UNFldouble n, int digits, uint64_t previous, int miss) {
 		r = CRC64(previous , (cbyte*) tmpu, bytes_converted+1);
 		free(tmpu);
 	}
+	#ifdef FORCELOCALE
+	setlocale(LC_ALL, oldlocale );
+        fesetround(ormode);
+	#endif 
 	return(r);
 }
 
 uint64_t UNF2 (char *n, int digits, uint64_t previous, int miss) {
+	#ifdef FORCELOCALE
+	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        int ormode=fegetround();
+        fesetround(FE_TONEAREST);
+	#endif
 	char *tmps, *tmpu=NULL;
 	int bytes_converted;
 	const char *missv="\0\0\0"; int missl=3;
@@ -463,16 +510,19 @@ uint64_t UNF2 (char *n, int digits, uint64_t previous, int miss) {
 		r = CRC64(previous , (cbyte*) tmpu, bytes_converted+1);
 		free(tmpu);
 	}
+	#ifdef FORCELOCALE
+	setlocale(LC_ALL, oldlocale );
+        fesetround(ormode);
+	#endif 
 	return(r);
 }
 
-/*	md5_state_t state;
-	md5_byte_t digest[16];
-
-	md5_init(&state);
-	md5_finish(&state, digest); */
-
 int UNF3 (char *n, int digits, md5_state_t *previous, int miss) {
+	#ifdef FORCELOCALE
+	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        int ormode=fegetround();
+        fesetround(FE_TONEAREST);
+	#endif
 	char *tmps, *tmpu=NULL;
 	const char *missv="\0\0\0"; int missl=3;
 	int bytes_converted;
@@ -504,10 +554,19 @@ int UNF3 (char *n, int digits, md5_state_t *previous, int miss) {
 		md5_append(previous, (const md5_byte_t *) tmpu, bytes_converted+1);
 		free(tmpu);
 	}
+	#ifdef FORCELOCALE
+	setlocale(LC_ALL, oldlocale );
+        fesetround(ormode);
+	#endif 
 	return(1);
 }
 
 int UNF3 (UNFldouble n, int digits, md5_state_t *previous, int miss) {
+	#ifdef FORCELOCALE
+	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        int ormode=fegetround();
+        fesetround(FE_TONEAREST);
+	#endif
 	char *tmps, *tmpu=NULL;
 	const char *missv="\0\0\0"; int missl=3;
 	int bytes_converted;
@@ -547,6 +606,106 @@ int UNF3 (UNFldouble n, int digits, md5_state_t *previous, int miss) {
 		md5_append(previous, (const md5_byte_t *) tmpu, bytes_converted+1);
 		free(tmpu);
 	}
+	#ifdef FORCELOCALE
+	setlocale(LC_ALL, oldlocale );
+        fesetround(ormode);
+	#endif 
+	return(1);
+}
+
+int UNF4 (char *n, int digits, sha256_context *previous, int miss) {
+	#ifdef FORCELOCALE
+	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        int ormode=fegetround();
+        fesetround(FE_TONEAREST);
+	#endif
+	char *tmps, *tmpu=NULL;
+	const char *missv="\0\0\0"; int missl=3;
+	int bytes_converted;
+	
+	if (!miss) {
+		tmps = Genround(n, digits);
+		#ifdef DEBUG
+		fprintf (stderr,"%s\n",tmps);
+		#endif 
+
+		if (tmps == NULL) {
+			return (0);
+		}
+		tmpu = Canonicalize_unicode("ASCII", tmps, &bytes_converted);
+		free (tmps);
+		if (tmpu == NULL) {
+			return (0);
+		}
+	} 
+
+	if (miss) {
+		#ifdef DEBUG
+		fprintf (stderr,"miss\n");
+		#endif
+		sha256_update(previous, (uint8 *) missv, (uint32) missl);
+	} else {
+		// we use bytes converted +1 to include the null terminator in the
+		// checksum, which ensures each entry is clearly separated from the next
+		sha256_update(previous, (uint8 *) tmpu, (uint32) bytes_converted+1);
+		free(tmpu);
+	}
+	#ifdef FORCELOCALE
+	setlocale(LC_ALL, oldlocale );
+        fesetround(ormode);
+	#endif 
+	return(1);
+}
+
+int UNF4 (UNFldouble n, int digits, sha256_context *previous, int miss) {
+	#ifdef FORCELOCALE
+	char *oldlocale = setlocale(LC_ALL, "POSIX");
+        int ormode=fegetround();
+        fesetround(FE_TONEAREST);
+	#endif
+	char *tmps, *tmpu=NULL;
+	const char *missv="\0\0\0"; int missl=3;
+	int bytes_converted;
+	
+	if (!miss) {
+		tmps = Genround(n, digits);
+		#ifdef DEBUG
+		fprintf (stderr,"After Genround:%s:\n",tmps);
+		#endif
+		if (tmps == NULL) {
+			return (0);
+		}
+		tmpu = Canonicalize_unicode("ASCII", tmps, &bytes_converted);
+		#ifdef DEBUG
+		{ int i;
+		  fprintf (stderr, "UNICODE BYTES (%d): ", bytes_converted);
+		  for (i =0; i<bytes_converted; i++) {
+			fprintf(stderr, "%d,", (int) tmpu[i]);
+		  }
+		  fprintf (stderr, "\n");
+		}
+		#endif
+		free (tmps);
+		if (tmpu == NULL) {
+			return (0);
+		}
+	} 
+
+	if (miss) {
+		#ifdef DEBUG
+		fprintf (stderr,"miss\n");
+		#endif
+		sha256_update(previous, (uint8 *) missv, (uint32) missl);
+	} else {
+		// we use bytes converted +1 to include the null terminator in the
+		// checksum, which ensures each entry is clearly separated from the next
+		sha256_update(previous, (uint8 *) tmpu, (uint32) bytes_converted+1);
+		free(tmpu);
+	}
+	#ifdef FORCELOCALE
+	setlocale(LC_ALL, oldlocale );
+        fesetround(ormode);
+	#endif 
 	return(1);
 }
 
@@ -598,11 +757,6 @@ int UNF_init (int quiet) {
 		}
 	}
 
-
-	#ifndef FORCELOCALE
-	// POSIX locale required for string conversions
-	setlocale(LC_ALL, "POSIX"); 	    
-	#endif
 
 	IS_LITTLE_ENDIAN = check_little_endian();
 	return(retval);

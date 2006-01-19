@@ -8,7 +8,11 @@
 A universal numeric fingerprint is used to guarantee that a defined subset of data is substantively identical to a comparison subset. Two fingerprints will match if and only if the subset of data generating them are identical, when represented using a given number of significant digits.
 }
 \usage{
-	unf (data, digits=10, version=3, sortColumnsByName=F,rowIndexVar=NULL)
+       unf(data, digits = NULL, ndigits = { if (is.null(digits))
+                 { 6 } else (digits)}, cdigits = { if (is.null(digits))
+                 { 128 } else (digits)}, version = 4, rowIndexVar =
+                 NULL, rowOrder = { if (is.null(rowIndexVar)) { NULL }
+                 else { order(rowIndexVar) }})
 	unf2base64 (x)
 	as.character.unf(x)
 	as.unf(char)
@@ -16,10 +20,12 @@ A universal numeric fingerprint is used to guarantee that a defined subset of da
 
 \arguments{
 	\item{data}{A numeric or charactervector or data frame. Other types will be computed.}	
-	\item{digits}{number of digits used in rounding (for numeric values) or truncation (for characters) prior to applying cryptographic hash}
+	\item{digits}{number of digits to use, see cdigits and ndigits}
+	\item{ndigits}{number of significant digits for rounding for numeric values prior to applying cryptographic hash}
+	\item{cdigits}{number of characters for truncation prior to applying cryptographic hash}
 	\item{version}{algorithmic version. Always use the same version of the algorithm to check a signature.}
-	\item{sortColumnsByName}{ a flag causing columns to be sorted, before UNF's are computed, which affects the summary() UNF value of the data, but not the individual UNF's of the vector. This is equivalent to unf(,df[sort(names(df)] }
 	\item{rowIndexVar}{ a vector of rowids. The resulting data will be sorted by this vector before the UNF's are computed. This will affect the UNF for each vector. This is equivalent to unf(df[order(rowIndexVar),] }
+	\item{rowOrder}{ explicit sort ordering, an alternative to using rowIndexVar}
 	\item{x}{ a unf object, returned by \code{unf}}
 	\item{char}{ a character vector of UNF character strings}
 }
@@ -56,10 +62,10 @@ UNF libraries are available for standalone use, for use in C++, and for use with
 The \code{unf} function returns a UNF object which can be converted using \code{as.character} to a signature string.
 
 For example:
-	UNF:3:10:ZNQRI14053UZq389x0Bffg==
+	UNF:3:10,128:ZNQRI14053UZq389x0Bffg==
 
 This representation identifies the signature as a fingerprint, using version 3,
- of the algorithm,  computed to 10 significant digits. The segment following the final colon is the actual fingerprint in base64 encoded format.
+ of the algorithm,  computed to 10 significant digits for numbers and 128 for characters. The segment following the final colon is the actual fingerprint in base64 encoded format.
 
 Note: to compare two UNF's, or sets of unfs, one often wants to compare only the base64 portion. Use \code{unf2base64} for this, which will extract the base64 portion.
 Use \code{summary} to produce a single UNF from set of vectors, by computing a new UNF across the base64 strings. The order in which the set of vectors is important.
@@ -87,10 +93,10 @@ print(unf(v))
 as.character(unf(v))
 
 # this is false,  since computed  base64 values UNF's differ
-as.character(unf(v))==as.character(unf(vr))
+unf2base64(unf(v))==unf2base64(unf(vr))
 
 # this is true,  since computed UNF's base64 values are the same at 2 significant digits
-as.character(unf(v, digits=2))==as.character(unf(vr))
+unf2base64(unf(v, digits=2))==unf2base64(unf(vr))
 
 # WARNING: this is false, since UNF's values are the same, but 
 # number of calculated digits differ , probably not the comparison
@@ -98,11 +104,16 @@ as.character(unf(v, digits=2))==as.character(unf(vr))
 
 identical(unf(v,digits=2),unf(vr))
 
-# compute a fingerprint of longley at 10 significant digits of accuracy
+# compute a fingerprint of longley at 10 significant digits of accuracy for numeric values
 # this fingerprint can be stored and verified when reading the dataset
 # later
 data(longley)
-mf10<-unf(longley,digits=10);
+mf10<-unf(longley,ndigits=10);
+
+# this produces the same results as using signifz(), but not signif()
+mf11<-unf(signifz(longley,digits=10))
+
+unf2base64(mf11)==unf2base64(mf10)
 
 #printable representation, prints seven UNF's, one for each vector
 print(mf10)
@@ -110,6 +121,15 @@ print(mf10)
 #  summarizes the base64 portion of the unf for each vector into a 
 # single  base64 UNF representing entire dataset
 summary(mf10)
+\dontshow{
+#self test
+
+unfTest=get("unfTest",envir=environment(unf))
+if (!unfTest(silent=F)) {
+	stop("failed self tests")
+}
+
+}
 
 }
 
@@ -117,7 +137,7 @@ summary(mf10)
 Micah Altman
 \email{Micah\_Altman@harvard.edu}
 
-\url{http://www.hmdc.harvard.edu/micah_altman/}
+\url{http://thedata.org/index.php/Main/UNF}
 }
 
 \keyword{misc}
