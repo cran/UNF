@@ -45,6 +45,26 @@ uint64_t ntoh64(uint64_t);
 uint64_t hton64(uint64_t);
 long int myhtonl (long int) ;
 long int myntohl (long int);
+#ifndef PEDANTIC 
+char *Genround(long double , int );
+char *Genround(long long, int );
+#endif
+// Running with --pedantic C++
+#ifndef PEDANTIC 
+char *Genround(long double , int );
+char *Genround(long long, int );
+#endif
+char *Genround(char*, int );
+char *Genround(short int , int );
+char *Genround(int , int ) ;
+char *Genround(long, int );
+char *Genround(double , int );
+char *Genround(float , int ) ;
+
+uint64_t Checksum_bytes(uint64_t previous , cbyte* sequence, int len);
+uint64_t CRC64(uint64_t , cbyte* , int );
+char* Canonicalize_unicode(const char*, const char*, char*, int*);
+
 
 /*
  * GLOBALS
@@ -53,322 +73,27 @@ long int myntohl (long int);
 int static PASSED_INIT = UNF_init(1);
 int static IS_LITTLE_ENDIAN= check_little_endian();
 
-//#define DEBUG
 
 /*
- * Canonicalization routines --  string output
- */
-
-
-
-/*
- * Generalized Rounding Routines
- 
- * Genround()
- *
- * args:
- * 	n - number
- * 	digits - significant digits to be rounded to
- *
- * returns:
- * 	Char string representing properly rounded value.
- *  	This string must be free()'d.	
- *
- * Note: requires stdio.h , locale.h, string.h 
- *
- * Assumes Init routine has been called to set locale.
- */
-
-UNFldouble sigDig(UNFldouble n, int digits) {
-	#ifdef PEDANTIC
-        int magnitude = (int) floor(log10(fabs(n)));
-	#else
-        int magnitude = (int) floor(log10l(fabsl(n)));
-	#endif
-        double scale = pow(10, (digits-magnitude-1));
-	double ret;
-        //double ret =   rint(n * scale)/scale;
-	if ( n>=0 ) {
-		ret = floor(n * scale)/scale;
-	} else {
-		ret = ceil(n * scale)/scale;
-	}
-	#ifdef DEBUG
-	fprintf (stderr,"rescaled %Le\n",ret);
-	#endif
-        return(ret);
-}
-
-char *Genround(UNFldouble n, int digits ) {
-
-	// STEP 1: non-finite numbers
-	char *buf = (char*) malloc(digits+20) ;
-    	if (finite(n)==0)  {
-                if (isnan(n)!=0) {
-                        sprintf(buf,"+nan\n");
-                } else if (isinf(n)==-1) {
-                        sprintf(buf,"-inf\n");
-                } else {
-                        sprintf(buf,"+inf\n");
-                }
-		return(buf);
-        }
-	
-	// STEP 2: finite numbers
-	char *buf2 = (char*) malloc(digits+20) ;
-
-	#ifdef INACCURATE_SPRINTF
-	//printf is inaccurate, print an extra digit of 
-	// precision then truncate it
-	//n = sigDig(n,digits); // roundoff -- didn't work well
-	#endif 
-
-	#ifdef PEDANTIC
-	   #ifdef INACCURATE_SPRINTF
-	   sprintf(buf,"%+#.*e\n", 14,  n);
-	   #else 
-	   sprintf(buf,"%+#.*e\n", digits-1,  n);
-	   #endif
-	#else
-	  #ifdef INACCURATE_SPRINTF
-	  sprintf(buf,"%+#.*Le\n", 14,  n);
-	  #else 
-	  sprintf(buf,"%+#.*Le\n", digits-1,  n);
-	  #endif
-	#endif
-
-	// Canonical form is 
-	//		- leading + or -
-	//		- leading digit
-	//		- decimal point
-	//		- up to digit-1 digits, no trailing zeros
-	//		- 'e' (lower-case e)
-	//		- '+' or '-'
-	//		- exponent digits, with no leading zeros
-	// E.g: +1.2e+1 -2.e+  +1.362e-17 +0.e+
-	//remove trailing zeros in the mantissa  (can't just use %+$.*Lg )
-	//remove leading zeros in the exponent
-	int i,j, mantissa_end, exponent_begin;
-	mantissa_end =(2+digits-1); 
-	while(buf[mantissa_end]=='0' && (mantissa_end >2)) {
-		mantissa_end--;
-	}
-	#ifdef INACCURATE_SPRINTF
-	// sprintf is inaccurate, print an extra digit of 
-	// precision then truncate it
-	exponent_begin = 19;
-	#else
-	exponent_begin = 4+digits;
-	#endif
-	while (buf[exponent_begin]=='0') {
-		exponent_begin++;
-	}
-
-	for (i=0; i<= mantissa_end; i++) {
-		buf2[i]=buf[i];
-	}
-	buf2[i]='e';
-	#ifdef INACCURATE_SPRINTF
-	buf2[i+1]=buf[18];
-	#else
-	buf2[i+1]=buf[digits+3];
-	#endif
-	j=i+2;		
-	for (i=exponent_begin; buf[i]!=0; i++) {
-		buf2[j]=buf[i];
-		j++;
-	}
-	buf2[j]='\0';
-	free(buf);
-
-	return(buf2);
-}
-
-
-char *Genround(char *n, int digits) {
-	char *buf = (char*) malloc(digits+20) ;
-
-	sprintf(buf,"%.*s\n", digits,  n);
-	return(buf);
-}
-
-/* these are simply wrappers around long double versions */
-
-#ifndef PEDANTIC
-char *Genround(long long n, int digits ) {
-	return(Genround((UNFldouble) n, digits));
-}
-
-char *Genround(double n, int digits ) {
-	return(Genround((UNFldouble) n, digits));
-}
-#endif
-
-char *Genround(short int n, int digits ) {
-	return(Genround((UNFldouble) n, digits));
-}
-
-char *Genround(int n, int digits ) {
-	return(Genround((UNFldouble) n, digits));
-}
-
-char *Genround(long n, int digits ) {
-	return(Genround((UNFldouble) n, digits));
-}
-
-char *Genround(float n, int digits ) {
-	return(Genround((UNFldouble) n, digits));
-}
-
-
-/*
- * Fingerprinting methods
- *
- * These take a stream of bytes and return a fingerprint for the stream,
- *
- * Algorithms to do this include (in fastest but least robust to slowest but
- * most robust order):
- *
- * 	- checksums			( better than nothing, but not completely 
- * 						robust to accidental modification ) 
- * 	- cyclic-redundancy-checks 	( almost completely robust
- * 					 to most accidental modification, but not to 
- * 					  intentional tampering )
- * 	- message-digest algorithms	( robust to intentional tampering )
- *
- */
-
-uint64_t Checksum_bytes(uint64_t previous , cbyte* sequence, int len) {
-   int i;
-   uint64_t r = previous;
-   if (len<0) {
-	   return(previous);
-   }
-   for ( i=0; i<len; i++) { 
-	  r += (unsigned short int) sequence[i];
-   }	    
-   return(r);
-}
-
-
-uint64_t CRC64(uint64_t previous , cbyte* sequence, int len){
-
-	// Based on SPcrc, a C implementation by Christian Iseli
-
-  #define AUTODIN_IIREV	0xEDB88320
-  #define POLY64REV	0xd800000000000000ULL
-  static uint64_t CRCTable[256];
-  uint64_t crc = ntoh64(previous);
-  static int init = 0;
-  int i;
-
-  if (!init) {
-    init = 1;
-    for (i = 0; i <= 255; i++) {
-      int j;
-      uint64_t part = i;
-      for (j = 0; j < 8; j++) {
-        if (part & 1)
-          part = (part >> 1) ^ POLY64REV;
-        else
-          part >>= 1;
-      }
-      CRCTable[i] = part;
-    }
-  }
-
-  for (i = 0; i < len; i++) {
-    uint64_t temp1 = crc >> 8;
-    uint64_t temp2 = CRCTable[(crc ^ (uint64_t) sequence[i]) & 0xff];
-    crc = temp1 ^ temp2;
-  }
-
-  return(hton64(crc));
-  #undef AUTODIN_IIREV
-  #undef POLY64REV
-}
-  
-
-/* 
- * Convert string to canonical form
- *
- * Use of iconv based on example code from GCC manual.
- *
- */
-
-char* Canonicalize_unicode(const char *charset, const char *dcharset, char *inbuf, int *bytes_converted)
-{
-  char *wrptr, *inptr, *outbuf;
-  size_t nconv,insize;
-  iconv_t cd;
-
-  int bufsize = (strlen(inbuf)+1)* 8;
-  size_t avail = bufsize;
-
-  outbuf = (char *) calloc(bufsize, 1); 
-  if (outbuf==NULL) {
-      perror("calloc");
-      *bytes_converted=-1;
-      return(NULL);
-  }
-
-  /* set pointers to beginning of buffers */
-  wrptr=outbuf;
-  inptr=inbuf;
-
-  cd = iconv_open ( dcharset, charset); if (cd == (iconv_t) -1) {
-      if (errno == EINVAL)
-        fprintf(stderr, "conversion from '%s' to %s  not available",
-               charset, dcharset);
-      else
-        perror ("iconv_open");
-
-      *bytes_converted=-1;
-      free(outbuf);
-      return(NULL);
-   }
-
-   /* Now write out the byte sequence to get into the
-             initial state if this is necessary.  */
-   iconv (cd, NULL, NULL, &wrptr, &avail);
-
-   /* Do the conversion.  */
-   insize = strlen(inbuf);
-   #ifdef ICONV18
-   nconv = iconv (cd, (const char **) &inptr, &insize, &wrptr, &avail);
-   #else
-   nconv = iconv (cd, &inptr, &insize, &wrptr, &avail);
-   #endif 
-   if (nconv == (size_t) -1) {
-	    if (errno != E2BIG) {
-            	perror ("iconv_open");
-      		*bytes_converted=-1;
-      		free(outbuf);
-      		return(NULL);
-	    }
-   }
-
-   /* Terminate the output string.  */
-    *wrptr = '\0'; 
-
-   if (iconv_close (cd) != 0)
-    	perror ("iconv_close");
-
-   *bytes_converted =  wrptr - outbuf;
-   return(outbuf);
-}
-
-/*
- * Portable Multi-Resolution Numeric Fingerprint routines
+ * Universal Numeric Fingerprint routines
  *
  * This is mathematically a composition of the
  * fingerpring, canonicalization and rounding method:
  *
- * FingerPrint(Canoicalization(Round(value,digits)))
+ * FingerPrint(Cannoicalization(Round(value,digits)))
  *
- * PMRNF1 is for test purposes.
- * PMRNF2 is more robust.
+ * Algorithmically, each UNF version performs the following steps
+ * 
+ * - Round value to n digits using Genround()
+ * - Convert value to canonical form using Canonicalize_unicode()
+ * - Update checksum or cryptographic hash structure
  *
+ * Parameters
+ * 
+ * n - value to be fingerprinted
+ * digits - precison of calculation
+ * previous - hash structure from previous iteration
+ * miss - flag: is this is a missing value?
  *
  */
 
@@ -699,6 +424,298 @@ int UNF4_1(UNFldouble n, int digits, sha256_context *previous, int miss) {
 }
 
 
+
+/*
+ * Generalized Rounding Routines
+ 
+ * Genround()
+ *
+ * args:
+ * 	n - number
+ * 	digits - significant digits to be rounded to
+ *
+ * returns:
+ * 	Char string representing properly rounded value.
+ *  	This string must be free()'d.	
+ *
+ * Note: requires stdio.h , locale.h, string.h 
+ *
+ * Assumes Init routine has been called to set locale.
+ */
+
+char *Genround(UNFldouble n, int digits ) {
+
+	#ifdef DEBUG
+	#ifdef PEDANTIC
+	fprintf(stderr,"Entering genround %+#.*e\n", 15,  n);
+	#else
+	fprintf(stderr,"Entering genround %+#.*Le\n", 15,  n);
+	#endif
+	#endif 
+	// STEP 1: non-finite numbers
+	char *buf = (char*) malloc(digits+20) ;
+    	if (finite(n)==0)  {
+                if (isnan(n)!=0) {
+                        sprintf(buf,"+nan\n");
+                } else if (isinf(n)==-1) {
+                        sprintf(buf,"-inf\n");
+                } else {
+                        sprintf(buf,"+inf\n");
+                }
+		return(buf);
+        }
+	
+	// STEP 2: finite numbers
+	char *buf2 = (char*) malloc(digits+20) ;
+
+	#ifdef PEDANTIC
+	   #ifdef INACCURATE_SPRINTF
+	   sprintf(buf,"%+#.*e\n", 14,  n);
+	   #ifdef DEBUG
+	   fprintf(stderr,"In genround, buf %s\n",buf);
+	   #endif 
+	   #else 
+	   sprintf(buf,"%+#.*e\n", digits-1,  n);
+	   #ifdef DEBUG
+	   fprintf(stderr,"In genround, buf %s\n",buf);
+	   #endif 
+	   #endif
+	#else
+	  #ifdef INACCURATE_SPRINTF
+	  sprintf(buf,"%+#.*Le\n", 14,  n);
+	   #ifdef DEBUG
+	   fprintf(stderr,"In genround, buf %s\n",buf);
+	   #endif 
+	  #else 
+	  sprintf(buf,"%+#.*Le\n", digits-1,  n);
+	   #ifdef DEBUG
+	   fprintf(stderr,"In genround, buf %s\n",buf);
+	   #endif 
+	  #endif
+	#endif
+
+	// Canonical form is 
+	//		- leading + or -
+	//		- leading digit
+	//		- decimal point
+	//		- up to digit-1 digits, no trailing zeros
+	//		- 'e' (lower-case e)
+	//		- '+' or '-'
+	//		- exponent digits, with no leading zeros
+	// E.g: +1.2e+1 -2.e+  +1.362e-17 +0.e+
+	//remove trailing zeros in the mantissa  (can't just use %+$.*Lg )
+	//remove leading zeros in the exponent
+	int i,j, mantissa_end, exponent_begin;
+	mantissa_end =(2+digits-1); 
+	while(buf[mantissa_end]=='0' && (mantissa_end >2)) {
+		mantissa_end--;
+	}
+	#ifdef INACCURATE_SPRINTF
+	// sprintf is inaccurate, print an extra digit of 
+	// precision then truncate it
+	exponent_begin = 19;
+	#else
+	exponent_begin = 4+digits;
+	#endif
+	while (buf[exponent_begin]=='0') {
+		exponent_begin++;
+	}
+
+	for (i=0; i<= mantissa_end; i++) {
+		buf2[i]=buf[i];
+	}
+	buf2[i]='e';
+	#ifdef INACCURATE_SPRINTF
+	buf2[i+1]=buf[18];
+	#else
+	buf2[i+1]=buf[digits+3];
+	#endif
+	j=i+2;		
+	for (i=exponent_begin; buf[i]!=0; i++) {
+		buf2[j]=buf[i];
+		j++;
+	}
+	buf2[j]='\0';
+	free(buf);
+
+	return(buf2);
+}
+
+
+char *Genround(char *n, int digits) {
+	char *buf = (char*) malloc(digits+20) ;
+
+	sprintf(buf,"%.*s\n", digits,  n);
+	return(buf);
+}
+
+/* these are simply wrappers around long double versions */
+
+#ifndef PEDANTIC
+char *Genround(long long n, int digits ) {
+	return(Genround((UNFldouble) n, digits));
+}
+
+char *Genround(double n, int digits ) {
+	return(Genround((UNFldouble) n, digits));
+}
+#endif
+
+char *Genround(short int n, int digits ) {
+	return(Genround((UNFldouble) n, digits));
+}
+
+char *Genround(int n, int digits ) {
+	return(Genround((UNFldouble) n, digits));
+}
+
+char *Genround(long n, int digits ) {
+	return(Genround((UNFldouble) n, digits));
+}
+
+char *Genround(float n, int digits ) {
+	return(Genround((UNFldouble) n, digits));
+}
+
+
+/*
+ * Fingerprinting methods
+ *
+ * These take a stream of bytes and return a fingerprint for the stream,
+ *
+ * Algorithms to do this include (in fastest but least robust to slowest but
+ * most robust order):
+ *
+ * 	Version 1 - checksums		( better than nothing, but not completely 
+ * 						robust to accidental modification ) 
+ * 	Version 2 - cyclic-redundancy-checks 	( almost completely robust
+ * 					 to most accidental modification, but not to 
+ * 					  intentional tampering )
+ * 	Version 3,4 - message-digest algorithms	( robust to intentional tampering )
+ *		- MD5
+ *		- SHA256
+ */
+
+uint64_t Checksum_bytes(uint64_t previous , cbyte* sequence, int len) {
+   int i;
+   uint64_t r = previous;
+   if (len<0) {
+	   return(previous);
+   }
+   for ( i=0; i<len; i++) { 
+	  r += (unsigned short int) sequence[i];
+   }	    
+   return(r);
+}
+
+
+uint64_t CRC64(uint64_t previous , cbyte* sequence, int len){
+
+	// Based on SPcrc, a C implementation by Christian Iseli
+
+  #define AUTODIN_IIREV	0xEDB88320
+  #define POLY64REV	0xd800000000000000ULL
+  static uint64_t CRCTable[256];
+  uint64_t crc = ntoh64(previous);
+  static int init = 0;
+  int i;
+
+  if (!init) {
+    init = 1;
+    for (i = 0; i <= 255; i++) {
+      int j;
+      uint64_t part = i;
+      for (j = 0; j < 8; j++) {
+        if (part & 1)
+          part = (part >> 1) ^ POLY64REV;
+        else
+          part >>= 1;
+      }
+      CRCTable[i] = part;
+    }
+  }
+
+  for (i = 0; i < len; i++) {
+    uint64_t temp1 = crc >> 8;
+    uint64_t temp2 = CRCTable[(crc ^ (uint64_t) sequence[i]) & 0xff];
+    crc = temp1 ^ temp2;
+  }
+
+  return(hton64(crc));
+  #undef AUTODIN_IIREV
+  #undef POLY64REV
+}
+  
+
+/* 
+ * Convert string to canonical form
+ *
+ * Use of iconv based on example code from GCC manual.
+ *
+ */
+
+char* Canonicalize_unicode(const char *charset, const char *dcharset, char *inbuf, int *bytes_converted)
+{
+  char *wrptr, *inptr, *outbuf;
+  size_t nconv,insize;
+  iconv_t cd;
+
+  int bufsize = (strlen(inbuf)+1)* 8;
+  size_t avail = bufsize;
+
+  outbuf = (char *) calloc(bufsize, 1); 
+  if (outbuf==NULL) {
+      perror("calloc");
+      *bytes_converted=-1;
+      return(NULL);
+  }
+
+  /* set pointers to beginning of buffers */
+  wrptr=outbuf;
+  inptr=inbuf;
+
+  cd = iconv_open ( dcharset, charset); if (cd == (iconv_t) -1) {
+      if (errno == EINVAL)
+        fprintf(stderr, "conversion from '%s' to %s  not available",
+               charset, dcharset);
+      else
+        perror ("iconv_open");
+
+      *bytes_converted=-1;
+      free(outbuf);
+      return(NULL);
+   }
+
+   /* Now write out the byte sequence to get into the
+             initial state if this is necessary.  */
+   iconv (cd, NULL, NULL, &wrptr, &avail);
+
+   /* Do the conversion.  */
+   insize = strlen(inbuf);
+   #ifdef ICONV18
+   nconv = iconv (cd, (const char **) &inptr, &insize, &wrptr, &avail);
+   #else
+   nconv = iconv (cd, &inptr, &insize, &wrptr, &avail);
+   #endif 
+   if (nconv == (size_t) -1) {
+	    if (errno != E2BIG) {
+            	perror ("iconv_open");
+      		*bytes_converted=-1;
+      		free(outbuf);
+      		return(NULL);
+	    }
+   }
+
+   /* Terminate the output string.  */
+    *wrptr = '\0'; 
+
+   if (iconv_close (cd) != 0)
+    	perror ("iconv_close");
+
+   *bytes_converted =  wrptr - outbuf;
+   return(outbuf);
+}
+
 /*
  * Utility Routines
  */
@@ -752,6 +769,14 @@ int UNF_init (int quiet) {
 	return(retval);
 }
 
+/*
+*
+* check_little_endian
+*
+* Is the system little endian?
+*
+*/
+
 int check_little_endian (void) {
 	union {
 		long l;
@@ -761,6 +786,16 @@ int check_little_endian (void) {
 	return (u.c[sizeof (long) - 1] == 1);
 }
 
+
+/*
+*
+* ntoh64, hton64
+*
+* convert 64 bit integers to standard network byte order
+*
+* These are simply 64 bit versions of ntol and lton
+*
+*/
 
 uint64_t ntoh64(uint64_t n) {
 	/* Derived from GNUnet, by Christian Grothoff, et. al */
@@ -782,9 +817,15 @@ uint64_t hton64 ( uint64_t n) {
 }
 
 
+/* 
+* 
+* tobase64
+*
+* raw bytes in quasi-big-endian order to base 64 string (NUL-terminated) 
+*
+*/
 
 void tobase64(unsigned char *out, md5_byte_t *in, int inlen)
-/* raw bytes in quasi-big-endian order to base 64 string (NUL-terminated) */
 {
    static const char base64digits[] =
    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

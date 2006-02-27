@@ -21,8 +21,22 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+# These are the default precision levels for the UNF computation 
 v4DefaultNdig = 7;
 v4DefaultCdig = 128;
+
+
+######################################################
+# unf
+#
+# This is the public function for computing UNF's in R.
+# It checks data types, then calls unfV for each separate vector
+# to produce a vector of UNF values.
+# 
+# See the R documentation file for details of each argument and return value
+#
+######################################################
+
 
 "unf" <-
 function(data, 
@@ -91,6 +105,17 @@ function(data,
 	return(r)
 }
 
+######################################################
+#
+# summary.unf
+#
+# Computes a composite unf from the entire vector, by calling 
+# unf() on the sorted base64 portions
+# 
+# See the R documentation file for details of each argument and return value
+#
+######################################################
+
 summary.unf<-function(object,...) {
 	if (length(object)==1) {
 		return(object)
@@ -124,6 +149,16 @@ summary.unf<-function(object,...) {
 	return(ret)
 }
 
+######################################################
+#
+# as.character.unf 
+#
+# Converts the unf to a printable representation
+# 
+# See the R documentation file for details of each argument and return value
+#
+######################################################
+
 as.character.unf<-function(x) {
 	ret = character(length=length(x));
 	for (i in 1:length(x)) {
@@ -140,6 +175,18 @@ as.character.unf<-function(x) {
 	}
 	return(ret)	
 }
+
+######################################################
+#
+# as.unf
+#
+# Takes a vector of character string representing a unf and using
+# regexes converts it back into a an R unf object
+#
+# See the R documentation file for details of each argument and return value
+# 
+######################################################
+
 
 as.unf<-function(char) {
 	 if (!is.character(char)) {
@@ -178,6 +225,16 @@ as.unf<-function(char) {
 	return(ret)	
 }
 
+######################################################
+#
+# unf2base64
+#
+# Returns a base64 character string representing the UNF
+# 
+# See the R documentation file for details of each argument and return value
+#
+######################################################
+
 unf2base64<-function(x) {
 	ret = character(length=length(x))
 	for (i in 1:length(x)) {
@@ -185,6 +242,23 @@ unf2base64<-function(x) {
 	}
 	return(ret)	
 }
+
+######################################################
+#
+# unfV
+#
+# [Internal Function]
+#
+# Boring function that does some version and type checking
+# then calls the native C++ UNF bridge functions
+# 
+# Parameters:
+# 	v - character or numeric vector
+#	ndigits - digits of numeric precision
+#	cdigits - digits of character precision
+#	version - unf algorithm version
+# 
+######################################################
 
 "unfV" <-
 function(v, 
@@ -301,9 +375,32 @@ function(v,
 	return(sig)
 }
 
+######################################################
+#
+# print.unf
+#
+# Prints the unf. Just a wrapper of as.character()
+# 
+# See the R documentation file for details of each argument and return value
+#
+######################################################
+
 print.unf<-function(x,...) {
 	invisible(print(as.character(x),...));
 }
+
+######################################################
+#
+# signifz
+#
+# Rounds a vector of numbers to n significant digits
+# using round-toward-zero rounding. Not used in UNF 
+# computations per se, but for rproducing UNF's internal
+# rounding method in R.
+# 
+# See the R documentation file for details of each argument and return value
+#
+######################################################
 
 signifz<-function(x,digits=6) {
   if (class(x)=="data.frame") {
@@ -323,6 +420,17 @@ signifz<-function(x,digits=6) {
   ret[l0]=  ceiling(x[l0]*scale[l0])/scale[l0]
   return(ret)
 }
+
+######################################################
+#
+# unfTest
+#
+# [Internal Function]
+#
+# Performs some sanity checks on unf computation
+# and compares results to known correct output
+# 
+######################################################
 
 "unfTest" <-
 function(silent=TRUE) {

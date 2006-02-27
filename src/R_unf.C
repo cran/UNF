@@ -30,6 +30,30 @@
 // extern "C" so that R can see the functions...
 extern "C" {
 
+/*
+* R_unfX_[double|char]
+*
+* These are wrapperf sof R to call to generate a particular version of UNF 
+* for either a double or a char vector
+*
+* The procedure is essentially:
+*	- standardize locale and rounding mode
+*	- initialize hash structure
+*	- iterate through items, calling UNFX()
+*	- finalize hash
+*	- convert results to base64
+*
+* Parameters
+*
+* v -- vector to perform UNF over
+* nv -- numbver of items in vector
+* digits -- digits of precision in the unf
+* result -- result as bytes
+* result_base64 -- result as base64 string
+*
+*/
+
+
 
 void R_unf1_double(double v[], int *nv, int *digits, double *result,
 	char **result_base64 ) {

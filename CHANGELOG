@@ -23,3 +23,9 @@
 
 1.07
 - Protocol v. 4.1, perf, as.unf bug
+
+1.08
+- code comments 
+
+1.09
+- fix prototyping bug, add other languages
