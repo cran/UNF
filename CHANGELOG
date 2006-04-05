@@ -29,3 +29,6 @@
 
 1.09
 - fix prototyping bug, add other languages
+
+1.10
+- fix suppression of digits for default under v3

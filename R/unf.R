@@ -164,7 +164,7 @@ as.character.unf<-function(x) {
 	for (i in 1:length(x)) {
 	   version = attr(x[[i]],"version")
 	   ret[i]=paste("UNF:",attr(x[[i]],"version"),":",
-		 if ( (version<4) || (attr(x[[i]],"ndigits")!=v4DefaultNdig)
+		 if ( (version<3) || (attr(x[[i]],"ndigits")!=v4DefaultNdig)
 			 || (attr(x[[i]],"cdigits")!=v4DefaultCdig)
 			) {
 			paste( attr(x[[i]],"ndigits"), "," , 
