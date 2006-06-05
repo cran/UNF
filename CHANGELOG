@@ -32,3 +32,6 @@
 
 1.10
 - fix suppression of digits for default under v3
+
+1.11
+- fix non C99 #includes

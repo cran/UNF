@@ -4,11 +4,11 @@ PKG_CXXFLAGS=
 PKG_LIBS=
 
 UNAME=`uname`
-if ( test "$UNAME" == "Linux" ); then
+if ( test "$UNAME" = "Linux" ); then
 	PKG_CFLAGS=" -DINACCURATE_SPRINTF "
 	PKG_CXXFLAGS=" -DINACCURATE_SPRINTF " 
 	true
-elif ( test "$UNAME" == "Darwin" ); then
+elif ( test "$UNAME" = "Darwin" ); then
 	PKG_CFLAGS=" -DINACCURATE_SPRINTF -DICONV18"
 	PKG_CXXFLAGS=" -DINACCURATE_SPRINTF -DICONV18"
  	PKG_LIBS=" -liconv"

@@ -26,7 +26,7 @@
 
 
 // system include files
-#include <stdint.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <locale.h>
 #include <iconv.h> 
