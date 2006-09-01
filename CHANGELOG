@@ -35,3 +35,6 @@
 
 1.11
 - fix non C99 #includes
+
+1.13
+- inital changes for Splus compatability

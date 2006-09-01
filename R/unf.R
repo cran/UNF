@@ -5,7 +5,7 @@
 # Part of the UNF package. Available from www.r-project.org and
 # www.hmdc.harvard.edu/numerical_issues/
 #
-#    Copyright (C) 2004  Micah Altman
+#    Copyright (C) 2004-6  Micah Altman
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -271,98 +271,54 @@ function(v,
 		warning("unV called with NULL arguments")
 		return(NULL)
 	}
-
-	if (version == 1) {
-		if (is.character(v)) {
-		    r = .C("R_unf1_char", NAOK=TRUE, 
-			PACKAGE="UNF", 
-			as.character(v), as.integer(is.na(v)), 
-			as.integer(length(v)), as.integer(cdigits), 
-			fingerprint =double(length=1),
-			base64= INITSTRING 
-			)
-		} else {
-		    r = .C("R_unf1_double", NAOK=TRUE, as.double(v), as.integer(length(v)),
-			PACKAGE="UNF", 
-			as.integer(ndigits), 
-			fingerprint=double(length=1),
-			base64= INITSTRING 
-			)
-		}
-	} else if (version == 2) {
-		if (is.character(v)) {
-		    r = .C("R_unf2_char", NAOK=TRUE, 
-			PACKAGE="UNF", 
-			as.character(v), as.integer(is.na(v)), 
-			as.integer(length(v)), as.integer(cdigits), 
-			fingerprint =double(length=1),
-			base64= INITSTRING 
-			)
-		} else {
-		    r = .C("R_unf2_double", as.double(v), as.integer(length(v)),
-			PACKAGE="UNF", 
-			as.integer(ndigits), NAOK=TRUE,
-			fingerprint=double(length=1),
-			base64= INITSTRING 
-			)
-		}
-	} else if (version==3) {
-		if (is.character(v)) {
-		   r = .C("R_unf3_char",  NAOK=TRUE,
-			PACKAGE="UNF", 
-			as.character(v), as.integer(is.na(v)),
-			 as.integer(length(v)), as.integer(cdigits), 
-			fingerprint =integer(length=16),
-			base64= INITSTRING 
-			)
-		} else {
-		   r = .C("R_unf3_double", PACKAGE="UNF", 
-			NAOK=TRUE, as.double(v), as.integer(length(v)),
-			as.integer(ndigits), 
-			fingerprint =integer(length=32),
-			base64= INITSTRING
-			)
-		}
-	} else if (version==4) {
-		if (is.character(v)) {
-		   r = .C("R_unf4_char",  NAOK=TRUE,
-			PACKAGE="UNF", 
-			as.character(v), as.integer(is.na(v)),
-			 as.integer(length(v)), as.integer(cdigits), 
-			fingerprint =integer(length=16),
-			base64= INITSTRING 
-			)
-		} else {
-		   r = .C("R_unf4_double", PACKAGE="UNF", 
-			NAOK=TRUE, as.double(v), as.integer(length(v)),
-			as.integer(ndigits), 
-			fingerprint =integer(length=32),
-			base64= INITSTRING
-			)
-		}
-	}  else {
-		if (version != "4.1" )  {
-			warning("unsupported fingerprint version, using version 4.1, resetting default digits")
-			version = 4.1
-			
-		}
-		if (is.character(v)) {
-		   r = .C("R_unf4_1_char",  NAOK=TRUE,
-			PACKAGE="UNF", 
-			as.character(v), as.integer(is.na(v)),
-			 as.integer(length(v)), as.integer(cdigits), 
-			fingerprint =integer(length=16),
-			base64= INITSTRING 
-			)
-		} else {
-		   r = .C("R_unf4_1_double", PACKAGE="UNF", 
-			NAOK=TRUE, as.double(v), as.integer(length(v)),
-			as.integer(ndigits), 
-			fingerprint =integer(length=32),
-			base64= INITSTRING
-			)
-		}
-	}
+ 
+  if (!is.element(version,c(1,2,3,4,4.1))){
+      version=4
+      warning("Unsupported version -- using version 4")
+  }
+  
+  # build call
+  
+ verString = gsub("\\.","_",as.character(version))
+ if (is.character(v)) {
+    typeString = "char"
+ }
+ else 
+ {
+    typeString = "double"
+ }
+ funcName = paste("R_unf",verString,"_",typeString,sep="")
+ if (version<3) {
+      fingerprint=double(length=1)
+ } else {
+      fingerprint = integer(length=32)
+ }
+ base64=INITSTRING
+ 
+ unfCall = list(funcName,NAOK=TRUE)
+ if (is.R()) {
+    unfCall=c(unfCall,list(PACKAGE="UNF"))
+ }
+ else 
+ {
+    unfCall=c(unfCall,list(specialok=TRUE))
+ }
+ 
+ if(is.character(v)) {
+    unfCall=c(unfCall,list(as.character(v)), list(as.integer(is.na(v))),
+        as.integer(length(v)), as.integer(cdigits),
+        fingerprint=list(fingerprint),
+        base64=base64)
+ } else {
+        unfCall=c(unfCall,list(as.double(v)), 
+        as.integer(length(v)), as.integer(ndigits),
+        fingerprint=list(fingerprint),
+        base64=base64)
+ }
+  
+  # do call
+	
+	r<-do.call(".C",unfCall)
 	
 	sig = r$base64;	
 	class(sig)="unfV"
