@@ -26,7 +26,6 @@
 #include "unf.h"
 #include "R.h" /* use -I/path/to/R/includes to find it*/
 
-
 // extern "C" so that R can see the functions...
 extern "C" {
 

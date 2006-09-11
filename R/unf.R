@@ -195,7 +195,8 @@ as.unf<-function(char) {
          }
 	ret = vector(mode="list",length=length(char));
 	for (i in 1:length(char)) {
-		if ( regexpr("^UNF:[0-9a-zA-Z\.]+:([0-9]+(,[0-9]+)*:)?[a-zA-Z0-9+/]+=?=?",char[[i]],perl=TRUE)<0) {
+		if ( regexpr("^UNF:[0-9a-zA-Z.]+:([0-9]+(,[0-9]+)*:)?[a-zA-Z0-9+/]+=?=?",
+    char[[i]])<0) {
 			warning("does not appear to be a UNF")
 			return(NULL)
 		} else {
@@ -301,7 +302,7 @@ function(v,
  }
  else 
  {
-    unfCall=c(unfCall,list(specialok=TRUE))
+    unfCall=c(unfCall,list(specialsok=TRUE))
  }
  
  if(is.character(v)) {
@@ -317,8 +318,15 @@ function(v,
  }
   
   # do call
-	
-	r<-do.call(".C",unfCall)
+	if (is.R()) {
+	   r<-do.call(".C",unfCall)
+   } else {
+      r<-do.call(".C",unfCall)
+      ###TESTING-- Dummy values
+      #r=list()
+      #r$base64= paste(sum(as.numeric(v)),"FAKE00000000000000==",sep="")
+      #r$fingerprint = sum(as.numeric(v))
+   }
 	
 	sig = r$base64;	
 	class(sig)="unfV"
@@ -359,11 +367,16 @@ print.unf<-function(x,...) {
 ######################################################
 
 signifz<-function(x,digits=6) {
+
+  
   if (class(x)=="data.frame") {
-	ret=as.data.frame(sapply(x,function(y)signifz(y,digits=digits)
-		,simplify=F))
-	rownames(ret)=rownames(x)
-	return(ret)
+       ret = x
+       # used sapply here previously, but SPLUS doesn't like it
+       for (i in 1:length(x)) {
+          ret[[i]] = signifz(ret[[i]],digits=digits)
+       }
+       rownames(ret)=rownames(x)
+     	 return(ret)
   }
   magnitude = floor(log10(abs(x)))
   scale = 10^(digits-magnitude-1)
@@ -430,6 +443,29 @@ function(silent=TRUE) {
        }
   }
 
+  if (!is.R()){
+        longley <-
+structure(list(GNP.deflator = c(83, 88.5, 88.2, 89.5, 96.2, 98.1, 
+99, 100, 101.2, 104.6, 108.4, 110.8, 112.6, 114.2, 115.7, 116.9
+), GNP = c(234.289, 259.426, 258.054, 284.599, 328.975, 346.999, 
+365.385, 363.112, 397.469, 419.18, 442.769, 444.546, 482.704, 
+502.601, 518.173, 554.894), Unemployed = c(235.6, 232.5, 368.2, 
+335.1, 209.9, 193.2, 187, 357.8, 290.4, 282.2, 293.6, 468.1, 
+381.3, 393.1, 480.6, 400.7), Armed.Forces = c(159, 145.6, 161.6, 
+165, 309.9, 359.4, 354.7, 335, 304.8, 285.7, 279.8, 263.7, 255.2, 
+251.4, 257.2, 282.7), Population = c(107.608, 108.632, 109.773, 
+110.929, 112.075, 113.27, 115.094, 116.219, 117.388, 118.734, 
+120.445, 121.95, 123.366, 125.368, 127.852, 130.081), Year = as.integer(c(1947, 
+1948, 1949, 1950, 1951, 1952, 1953, 1954, 1955, 1956, 1957, 1958, 
+1959, 1960, 1961, 1962)), Employed = c(60.323, 61.122, 60.171, 
+61.187, 63.221, 63.639, 64.989, 63.761, 66.019, 67.857, 68.169, 
+66.513, 68.655, 69.564, 69.331, 70.551)), .Names = c("GNP.deflator", 
+"GNP", "Unemployed", "Armed.Forces", "Population", "Year", "Employed"
+), row.names = c("1947", "1948", "1949", "1950", "1951", "1952", 
+"1953", "1954", "1955", "1956", "1957", "1958", "1959", "1960", 
+"1961", "1962"), class = "data.frame")
+  }
+  
   cv3="PjAV6/R6Kdg0urKrDVDzfMPWJrsBn5FfOdZVr9W8Ybg="
   if (  unf2base64(summary(unf(longley,digits=3,version=4))) != cv3 ||
 	unf2base64(summary(unf(signifz(longley,digits=3),version=4))) != cv3) {

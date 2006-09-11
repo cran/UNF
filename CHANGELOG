@@ -38,3 +38,6 @@
 
 1.13
 - inital changes for Splus compatability
+
+1.14
+- Namespace imports, other  SPLUS changes

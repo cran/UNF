@@ -454,16 +454,19 @@ char *Genround(UNFldouble n, int digits ) {
 	#endif 
 	// STEP 1: non-finite numbers
 	char *buf = (char*) malloc(digits+20) ;
-    	if (finite(n)==0)  {
-                if (isnan(n)!=0) {
-                        sprintf(buf,"+nan\n");
-                } else if (isinf(n)==-1) {
-                        sprintf(buf,"-inf\n");
-                } else {
-                        sprintf(buf,"+inf\n");
-                }
-		return(buf);
-        }
+ 
+  // Caution finite, isnan, isinf, redefined if VCPP is active
+  if (!finite(n)){
+    if (isnan(n)!=0) {
+        sprintf(buf,"+nan\n");
+    } else if (isinf(n)==-1) {
+        sprintf(buf,"-inf\n");
+    } else {
+        sprintf(buf,"+inf\n");
+    }
+    return(buf);
+  }
+ 
 	
 	// STEP 2: finite numbers
 	char *buf2 = (char*) malloc(digits+20) ;
@@ -800,7 +803,7 @@ int check_little_endian (void) {
 uint64_t ntoh64(uint64_t n) {
 	/* Derived from GNUnet, by Christian Grothoff, et. al */
 	if (IS_LITTLE_ENDIAN) {
-		return (((uint64_t) myntohl(n)) << 32) + myntohl(n >> 32);
+		return (((uint64_t)myntohl( (long int) n) << 32) + myhtonl((long int)(n >> 32)));
 	} else {
 		return(n);
 	}
@@ -810,9 +813,9 @@ uint64_t hton64 ( uint64_t n) {
 	/* Derived from GNUnet, by Christian Grothoff, et. al */
 
 	if (IS_LITTLE_ENDIAN) {
-		return (((uint64_t)myhtonl(n)) << 32) + myhtonl(n >> 32);
+		return (((uint64_t)myhtonl( (long int) n) << 32) + myhtonl((long int)(n >> 32)));
 	} else {
-		return n; 
+		return (n); 
 	}
 }
 
@@ -878,23 +881,49 @@ long int myhtonl(long int x) {
      return(x);
 }
 
+int myisinf(double x){
+  #ifdef VCPP
+  if (finite(x))  { return (0); }
+  if (isnan(x)) {return(0); }
+  if (x>0) {return (1);}
+  return(-1);
+  #else
+  return(isinf(x));
+  #endif
+}
+
 /*
 	Locale setup 
 */
 
 void standard_locale(int restore) {
    static char *oldlocale;
+   #ifdef VCPP
+   static unsigned int ormode;
+   unsigned int curmode;
+    int err;
+   #else
    static int ormode;
+   #endif
    if (restore) {
         setlocale(LC_ALL, oldlocale);
+        #ifdef VCPP
+        err = _controlfp_s(&curmode, ormode, _MCW_RC);
+        #else
         fesetround(ormode);
+        #endif
    } else {
         oldlocale = setlocale(LC_ALL, "POSIX");
         if (!oldlocale) {
           oldlocale= setlocale(LC_ALL, "C");
         }
+        #ifdef VCPP
+        err = _controlfp_s(&ormode, 0, 0);
+        err = _controlfp_s(&curmode, _RC_NEAR, _MCW_RC);
+        #else
         ormode=fegetround();
         fesetround(FE_TONEAREST);
+        #endif
    }
 }
 
