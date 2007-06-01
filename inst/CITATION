@@ -6,7 +6,7 @@ citEntry(entry="Book",
                              as.person("J. Gill"),
                              as.person("M.P. McDonald")
 				),
-	 publisher = "John Wiley \& Sons",
+	 publisher = "John Wiley and Sons",
          edition = "First",
          address      = "New York",
          year         = 2003,

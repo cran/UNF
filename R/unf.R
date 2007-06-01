@@ -159,7 +159,7 @@ summary.unf<-function(object,...) {
 #
 ######################################################
 
-as.character.unf<-function(x) {
+as.character.unf<-function(x,...) {
 	ret = character(length=length(x));
 	for (i in 1:length(x)) {
 	   version = attr(x[[i]],"version")

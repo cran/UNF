@@ -14,7 +14,7 @@ A universal numeric fingerprint is used to guarantee that a defined subset of da
                  NULL, rowOrder = { if (is.null(rowIndexVar)) { NULL }
                  else { order(rowIndexVar) }})
 	unf2base64 (x)
-	as.character.unf(x)
+	as.character.unf(x,...)
 	as.unf(char)
 }
 
@@ -28,6 +28,7 @@ A universal numeric fingerprint is used to guarantee that a defined subset of da
 	\item{rowOrder}{ explicit sort ordering, an alternative to using rowIndexVar}
 	\item{x}{ a unf object, returned by \code{unf}}
 	\item{char}{ a character vector of UNF character strings}
+	\item{\ldots}{ part of the as.character generic, ignored}
 }
 \details{
 A UNF is created by rounding data values (or truncating strings)  to a known number of 
@@ -76,7 +77,11 @@ Use \code{summary} to produce a single UNF from set of vectors, by computing a n
 \references{
 Altman, M., J. Gill and M. P. McDonald.  2003.  \emph{Numerical Issues in Statistical
 Computing for the Social Scientist}.  John Wiley \& Sons.
-\url{http://www.hmdc.harvard.edu/numerical_issues/}
+\url{http://www.hmdc.harvard.edu/numerical_issues/} [Defining the algorithm]
+
+Altman, M., \& G. King. 2007. A Proposed Standard for the Scholarly Citation of Quantitative Data.
+\emph{D-Lib} 13(3/4).
+\url{http://dlib.org/dlib/march07/altman/03altman.html} [Citation standard using UNF's]
 }
 
 

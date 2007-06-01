@@ -1,7 +1,7 @@
 Package: UNF
 Title: Tools for creating universal numeric fingerprints for data. 
-Version: 1.14
-Date: 2006-09-11
+Version: 1.16
+Date: 2007-06-01
 Author: Micah Altman
 Description:  Computes a univeral numeric fingerprint of the data.
 Maintainer: Micah Altman <Micah_Altman@harvard.edu>
@@ -9,5 +9,5 @@ Dialect: R, S-Plus
 Depends: R (>= 2.0)
 Imports: utils
 License: GPL 2.0
-URL: http://thedata.org/index.php/Main/UNF, http://www.r-project.org, http://www.hmdc.harvard.edu/micah_altman/numal/
-Packaged: Tue Sep 12 17:06:08 2006; maltman
+URL: http://thedata.org/vdc/index.php?pagename=Main.UNF, http://www.r-project.org, http://www.hmdc.harvard.edu/micah_altman/numal/
+Packaged: Fri Jun  1 19:25:08 2007; maltman

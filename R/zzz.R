@@ -10,8 +10,9 @@
 # SPLUS ONLY
 .on.attach <- function(lib, pkg) {
   if (!is.R()) {
-    if (require(pkgutils,quietly=TRUE)){
-      citation("urn")
+    .require <- require # WORKAROUND SO R CMD CHECK DOESN'T COMPLAIN :-(
+    if (.require(pkgutils,quietly=TRUE)){
+      print(citation("UNF"))
     } else  {
       cat("To cite the UNF package in publications use:\n\n",
                 paste("Altman, M., Gill, J. and M.P. McDonald (2003)", 
