@@ -288,7 +288,7 @@ md5sum(&quot;iris.RData&quot;)
 </code></pre>
 
 <pre><code>##                         iris.RData 
-## &quot;56c524f80fc6a3108e6b893fd521fe9e&quot;
+## &quot;2c8430f48f6d62dd691bc3b3545caeaa&quot;
 </code></pre>
 
 <pre><code class="r">md5sum(&quot;iris.csv&quot;)
@@ -412,7 +412,37 @@ identical(unf(x1), unf(x2))
 <pre><code class="r">unf(iris)
 </code></pre>
 
-<pre><code>## UNF6:6oVTvlCR+F1W1HTJ/QUmkA==
+<pre><code>## $unf
+## [1] &quot;6oVTvlCR+F1W1HTJ/QUmkA==&quot;
+## 
+## $hash
+##  [1] ea 85 53 be 50 91 f8 5d 56 d4 74 c9 fd 05 26 90 71 00 c8 f0 b8 2d 98
+## [24] 87 9c 8d 6c da b5 11 c5 bb
+## 
+## $unflong
+## [1] &quot;6oVTvlCR+F1W1HTJ/QUmkHEAyPC4LZiHnI1s2rURxbs=&quot;
+## 
+## $formatted
+## [1] &quot;UNF6:6oVTvlCR+F1W1HTJ/QUmkA==&quot;
+## 
+## $variables
+##               Sepal.Length                Sepal.Width 
+## &quot;FnQvOCZE9tcn64bP78wLag==&quot; &quot;epaV+rjvURem8qIo0r9LBQ==&quot; 
+##               Petal.Length                Petal.Width 
+## &quot;KP6tL8gFSqnG3FLJ887o/g==&quot; &quot;TN39UY6H/vRGv4ARWQTXrw==&quot; 
+##                    Species 
+## &quot;Xqh76nYY3z8eTfmL1KfxaQ==&quot; 
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;UNF&quot;
+## attr(,&quot;version&quot;)
+## [1] 6
+## attr(,&quot;digits&quot;)
+## [1] 7
+## attr(,&quot;characters&quot;)
+## [1] 128
+## attr(,&quot;truncation&quot;)
+## [1] 128
 </code></pre>
 
 <pre><code>## &gt; Anderson, Edgar (1935). The irises of the Gaspe Peninsula, *Bulletin of the American Iris Society*, 59, 2-5. UNF6:6oVTvlCR+F1W1HTJ/QUmkA==
@@ -431,7 +461,37 @@ identical(unf(x1), unf(x2))
 <pre><code class="r">unf(iris)
 </code></pre>
 
-<pre><code>## UNF6:6oVTvlCR+F1W1HTJ/QUmkA==
+<pre><code>## $unf
+## [1] &quot;6oVTvlCR+F1W1HTJ/QUmkA==&quot;
+## 
+## $hash
+##  [1] ea 85 53 be 50 91 f8 5d 56 d4 74 c9 fd 05 26 90 71 00 c8 f0 b8 2d 98
+## [24] 87 9c 8d 6c da b5 11 c5 bb
+## 
+## $unflong
+## [1] &quot;6oVTvlCR+F1W1HTJ/QUmkHEAyPC4LZiHnI1s2rURxbs=&quot;
+## 
+## $formatted
+## [1] &quot;UNF6:6oVTvlCR+F1W1HTJ/QUmkA==&quot;
+## 
+## $variables
+##               Sepal.Length                Sepal.Width 
+## &quot;FnQvOCZE9tcn64bP78wLag==&quot; &quot;epaV+rjvURem8qIo0r9LBQ==&quot; 
+##               Petal.Length                Petal.Width 
+## &quot;KP6tL8gFSqnG3FLJ887o/g==&quot; &quot;TN39UY6H/vRGv4ARWQTXrw==&quot; 
+##                    Species 
+## &quot;Xqh76nYY3z8eTfmL1KfxaQ==&quot; 
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;UNF&quot;
+## attr(,&quot;version&quot;)
+## [1] 6
+## attr(,&quot;digits&quot;)
+## [1] 7
+## attr(,&quot;characters&quot;)
+## [1] 128
+## attr(,&quot;truncation&quot;)
+## [1] 128
 </code></pre>
 
 <p>But if we want to work with species individually, each of those subsets has a unique UNF:</p>
@@ -439,19 +499,109 @@ identical(unf(x1), unf(x2))
 <pre><code class="r">unf(iris[iris$Species == &#39;setosa&#39;,])
 </code></pre>
 
-<pre><code>## UNF6:8rTAejPnZtElgtCerfvi3A==
+<pre><code>## $unf
+## [1] &quot;8rTAejPnZtElgtCerfvi3A==&quot;
+## 
+## $hash
+##  [1] f2 b4 c0 7a 33 e7 66 d1 25 82 d0 9e ad fb e2 dc 69 26 6d c1 54 9b 5a
+## [24] 50 de d4 53 ba 62 3d dd e5
+## 
+## $unflong
+## [1] &quot;8rTAejPnZtElgtCerfvi3GkmbcFUm1pQ3tRTumI93eU=&quot;
+## 
+## $formatted
+## [1] &quot;UNF6:8rTAejPnZtElgtCerfvi3A==&quot;
+## 
+## $variables
+##               Sepal.Length                Sepal.Width 
+## &quot;sLv0H9KkeZ0Klz1FkPZD6w==&quot; &quot;NDS+9Y/TuRdPdsuzJPkqHg==&quot; 
+##               Petal.Length                Petal.Width 
+## &quot;KFiDQS2xOk/3V6P/pdhwRg==&quot; &quot;0fPGhIcbanhkrWxYcu5QTA==&quot; 
+##                    Species 
+## &quot;GRi7/wsCF/0X1suhXmiGzw==&quot; 
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;UNF&quot;
+## attr(,&quot;version&quot;)
+## [1] 6
+## attr(,&quot;digits&quot;)
+## [1] 7
+## attr(,&quot;characters&quot;)
+## [1] 128
+## attr(,&quot;truncation&quot;)
+## [1] 128
 </code></pre>
 
 <pre><code class="r">unf(iris[iris$Species == &#39;versicolor&#39;,])
 </code></pre>
 
-<pre><code>## UNF6:7ltC0QDS/iRK/QObr61L/Q==
+<pre><code>## $unf
+## [1] &quot;7ltC0QDS/iRK/QObr61L/Q==&quot;
+## 
+## $hash
+##  [1] ee 5b 42 d1 00 d2 fe 24 4a fd 03 9b af ad 4b fd ec a9 fb bd c4 43 e5
+## [24] f5 66 43 92 69 ba f2 d2 32
+## 
+## $unflong
+## [1] &quot;7ltC0QDS/iRK/QObr61L/eyp+73EQ+X1ZkOSabry0jI=&quot;
+## 
+## $formatted
+## [1] &quot;UNF6:7ltC0QDS/iRK/QObr61L/Q==&quot;
+## 
+## $variables
+##               Sepal.Length                Sepal.Width 
+## &quot;/soWsPKnlZul0lqEi4+Ilg==&quot; &quot;84kXZC1Sdodx2CfAPIA8Og==&quot; 
+##               Petal.Length                Petal.Width 
+## &quot;DDGm9DYLHl3XBT3CB1i4XQ==&quot; &quot;TIK/AcmohjpsCSVPiM14tQ==&quot; 
+##                    Species 
+## &quot;fnpmhwZXNydLqoBuDNEBug==&quot; 
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;UNF&quot;
+## attr(,&quot;version&quot;)
+## [1] 6
+## attr(,&quot;digits&quot;)
+## [1] 7
+## attr(,&quot;characters&quot;)
+## [1] 128
+## attr(,&quot;truncation&quot;)
+## [1] 128
 </code></pre>
 
 <pre><code class="r">unf(iris[iris$Species == &#39;virginica&#39;,])
 </code></pre>
 
-<pre><code>## UNF6:UysJ51ubitBP+7vy4QTwiA==
+<pre><code>## $unf
+## [1] &quot;UysJ51ubitBP+7vy4QTwiA==&quot;
+## 
+## $hash
+##  [1] 53 2b 09 e7 5b 9b 8a d0 4f fb bb f2 e1 04 f0 88 3d 2b b4 c0 6e c2 93
+## [24] 70 4f fb be 59 22 2e b7 e0
+## 
+## $unflong
+## [1] &quot;UysJ51ubitBP+7vy4QTwiD0rtMBuwpNwT/u+WSIut+A=&quot;
+## 
+## $formatted
+## [1] &quot;UNF6:UysJ51ubitBP+7vy4QTwiA==&quot;
+## 
+## $variables
+##               Sepal.Length                Sepal.Width 
+## &quot;ZMU5Ou91Xj5ryaiqZsO8BQ==&quot; &quot;J40L6fLrBgq/6fWQnz/lvg==&quot; 
+##               Petal.Length                Petal.Width 
+## &quot;jFlOpDVR3SB2bMS7hzlX3Q==&quot; &quot;/nzx1ICdRm4rbGWU2eDhYA==&quot; 
+##                    Species 
+## &quot;4ZzBHEfFjKIGBDS3EZ5C5w==&quot; 
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;UNF&quot;
+## attr(,&quot;version&quot;)
+## [1] 6
+## attr(,&quot;digits&quot;)
+## [1] 7
+## attr(,&quot;characters&quot;)
+## [1] 128
+## attr(,&quot;truncation&quot;)
+## [1] 128
 </code></pre>
 
 <p>Similarly, if we wanted to work with a random subsample of observations in <code>iris</code>, we could use UNF to state explicitly the contents of that subset:</p>
@@ -460,7 +610,37 @@ identical(unf(x1), unf(x2))
 unf(iris[sample(20, 1:nrow(iris), FALSE),])
 </code></pre>
 
-<pre><code>## UNF6:pXcTrdscvJ5nxkoQl8FhIA==
+<pre><code>## $unf
+## [1] &quot;pXcTrdscvJ5nxkoQl8FhIA==&quot;
+## 
+## $hash
+##  [1] a5 77 13 ad db 1c bc 9e 67 c6 4a 10 97 c1 61 20 07 3c 34 75 f2 3f df
+## [24] c6 da 1a 30 63 1f da 38 97
+## 
+## $unflong
+## [1] &quot;pXcTrdscvJ5nxkoQl8FhIAc8NHXyP9/G2howYx/aOJc=&quot;
+## 
+## $formatted
+## [1] &quot;UNF6:pXcTrdscvJ5nxkoQl8FhIA==&quot;
+## 
+## $variables
+##               Sepal.Length                Sepal.Width 
+## &quot;uzRDUlhfM5YQtYknSfo/Lg==&quot; &quot;UkXTGJ3xzYz/6HatjRQZGg==&quot; 
+##               Petal.Length                Petal.Width 
+## &quot;jXKRiYAEVHO6klZKWAUoGw==&quot; &quot;dMrsZfm/0mLTfeC15Si6sQ==&quot; 
+##                    Species 
+## &quot;xpexj9tMaFlE8PY9RQwJhQ==&quot; 
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;UNF&quot;
+## attr(,&quot;version&quot;)
+## [1] 6
+## attr(,&quot;digits&quot;)
+## [1] 7
+## attr(,&quot;characters&quot;)
+## [1] 128
+## attr(,&quot;truncation&quot;)
+## [1] 128
 </code></pre>
 
 </body>

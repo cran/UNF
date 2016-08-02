@@ -170,9 +170,9 @@ hr {
 
 <h1>The UNF Algorithm</h1>
 
-<p>This vignette describes the UNF algorithm (Altman, Gill, McDonald 2003; Altman and King 2007; Altman 2008) and the R implementation thereof, which includes some peculiarities. The official specifications for various versions of UNF can be found elsewhere online. The algorithm is described in general terms <a href="http://thedata.org/book/universal-numerical-fingerprint">here</a> and one can also find more specific descriptions of the <a href="http://thedata.org/book/unf-version-3-0">Version &frac34;</a>, <a href="http://thedata.org/book/unf-version-5-0">Version 5</a> and <a href="http://thedata.org/book/unf-version-6">Version 6</a> algorithms.</p>
+<p>This vignette describes the UNF algorithm (Altman, Gill, McDonald 2003; Altman and King 2007; Altman 2008) and the R implementation thereof, which includes some peculiarities. The official specifications for various versions of UNF can be found elsewhere online. The algorithm is described in general terms <a href="http://guides.dataverse.org/en/latest/developers/unf/index.html">here</a> and one can also find more specific descriptions of the <a href="http://guides.dataverse.org/en/latest/developers/unf/unf-v3.html">Version &frac34;</a>, <a href="http://guides.dataverse.org/en/latest/developers/unf/unf-v5.html">Version 5</a> and <a href="http://guides.dataverse.org/en/latest/developers/unf/unf-v6.html">Version 6</a> algorithms.</p>
 
-<p>The current version of this package is an R implementation that relies on general implementations of the relevant hash functions provided by <a href="http://cran.r-project.org/web/packages/digest/index.html">digest</a> and base64 encoding provided by <a href="http://cran.r-project.org/web/packages/RCurl/index.html">RCurl</a>. Versions 1 and 2 were available in an earlier version of the UNF package authored by Micah Altman, which was built on custom C libraries, and is included in the version logs on GitHub. That package was orphaned by CRAN in 2009. The package retains the core <code>unf</code> function from the earlier versions of the UNF package, but simplifies its use considerably. The package additionally implements some new helper functions.</p>
+<p>The current version of this package is an R implementation that relies on general implementations of the relevant hash functions provided by <a href="https://cran.r-project.org/package=digest">digest</a> and base64 encoding provided by <a href="https://cran.r-project.org/package=base64enc">base64enc</a>. Versions 1 and 2 were available in an earlier version of the UNF package authored by Micah Altman, which was built on custom C libraries, and is included in the version logs on GitHub. That package was orphaned by CRAN in 2009. The package retains the core <code>unf()</code> function from the earlier versions of the UNF package, but simplifies its use considerably. The package additionally implements some new helper functions.</p>
 
 <h2>(1) Numerics</h2>
 
@@ -189,9 +189,9 @@ hr {
 
 <p>Note (a): Zero can be positive (&ldquo;+0.e+&rdquo;) or negative (&ldquo;-0.e+&rdquo;).</p>
 
-<p>Note (b): <code>Inf</code>, <code>-Inf</code>, and <code>NaN</code> are represented as: &ldquo;+inf&rdquo;, &ldquo;-inf&rdquo;, and &ldquo;+nan&rdquo;, respectively. At some point in time, Dataverse handled non-finites by treating them as missing. See <a href="https://redmine.hmdc.harvard.edu/issues/2960">here</a> for some notes.</p>
+<p>Note (b): <code>Inf</code>, <code>-Inf</code>, and <code>NaN</code> are represented as: &ldquo;+inf&rdquo;, &ldquo;-inf&rdquo;, and &ldquo;+nan&rdquo;, respectively. At some point in time, Dataverse handled non-finites by treating them as missing.</p>
 
-<p>Note &copy;: The <a href="http://thedata.org">Dataverse</a> implementation of UNFv5 represents zero values (and logical <code>FALSE</code>) values as &ldquo;+0.e-6&rdquo; rather than the implied &ldquo;+0.e+&rdquo; (like logical <code>TRUE</code> values: &ldquo;+1.e+&rdquo;). The issue is described <a href="https://redmine.hmdc.harvard.edu/issues/3085">here</a>. This can be replicated in <code>unf5</code> by adding the argument <code>dvn_zero = TRUE</code>.</p>
+<p>Note &copy;: The <a href="http://dataverse.org/">Dataverse</a> implementation of UNFv5 represents zero values (and logical <code>FALSE</code>) values as &ldquo;+0.e-6&rdquo; rather than the implied &ldquo;+0.e+&rdquo; (like logical <code>TRUE</code> values: &ldquo;+1.e+&rdquo;). This can be replicated in <code>unf5()</code> by adding the argument <code>dvn_zero = TRUE</code>.</p>
 
 <h2>(2) Character Strings</h2>
 
@@ -288,15 +288,15 @@ hr {
 
 <h2>References</h2>
 
-<p>Altman, Micah, Jeff Gill and Michael P. McDonald.  2003. <em>Numerical Issues in Statistical Computing for the Social Scientist</em>.  John Wiley &amp; Sons. <a href="http://www.hmdc.harvard.edu/numerical_issues/">http://www.hmdc.harvard.edu/numerical_issues/</a>. <em>(Describes version 3 of the algorithm)</em></p>
+<p>Altman, Micah, Jeff Gill and Michael P. McDonald.  2003. <em>Numerical Issues in Statistical Computing for the Social Scientist</em>.  John Wiley &amp; Sons. <em>(Describes version 3 of the algorithm)</em></p>
 
-<p>Altman, Micah, &amp; Gary King. 2007. A Proposed Standard for the Scholarly Citation of Quantitative Data. <em>D-Lib</em> 13(&frac34;). <a href="http://dlib.org/dlib/march07/altman/03altman.html">http://dlib.org/dlib/march07/altman/03altman.html</a>.</p>
+<p>Altman, Micah, &amp; Gary King. 2007. &ldquo;A Proposed Standard for the Scholarly Citation of Quantitative Data.&rdquo; <em>D-Lib</em> 13(&frac34;). <a href="http://dlib.org/dlib/march07/altman/03altman.html">http://dlib.org/dlib/march07/altman/03altman.html</a>.</p>
 
-<p>Altman, Micah 2008. A Fingerprint Method for Scientific Data Verification. In T. Sobh, editor, <em>Advances in Computer and Information Sciences and Engineering</em>, chapter 57, pages 311-316. Springer Netherlands, Netherlands. <a href="http://link.springer.com/chapter/10.1007/978-1-4020-8741-7_57">http://link.springer.com/chapter/10.1007/978-1-4020-8741-7_57</a>. <em>(Describes version 5 of the algorithm)</em></p>
+<p>Altman, Micah 2008. &ldquo;A Fingerprint Method for Scientific Data Verification.&rdquo; In T. Sobh, editor, <em>Advances in Computer and Information Sciences and Engineering</em>, chapter 57, pp. 311-316. Springer Netherlands, Netherlands. <a href="http://link.springer.com/chapter/10.1007/978-1-4020-8741-7_57">http://link.springer.com/chapter/10.1007/978-1-4020-8741-7_57</a>. <em>(Describes version 5 of the algorithm)</em></p>
 
-<p>Data Citation Synthesis Group. 2013. Declaration of Data Citation Principles. <a href="http://www.force11.org/datacitation">http://www.force11.org/datacitation</a>.</p>
+<p>Data Citation Synthesis Group. 2013. &ldquo;Declaration of Data Citation Principles.&rdquo;</p>
 
-<p>Altman, Michah, and Merce Crosas. 2014. The Evolution of Data Citation: From Principles to Implementation. <em>IASSIST QUARTERLY</em>, Forthcoming. <a href="http://thedata.org/files/thedata_new2/files/altmancrosasiassistqforthcoming.pdf">http://thedata.org/files/thedata_new2/files/altmancrosasiassistqforthcoming.pdf</a>.</p>
+<p>Altman, Michah, and Merce Crosas. 2014. &ldquo;The Evolution of Data Citation: From Principles to Implementation.&rdquo; <em>IASSIST QUARTERLY</em>, Forthcoming. <a href="http://thedata.org/files/thedata_new2/files/altmancrosasiassistqforthcoming.pdf">http://thedata.org/files/thedata_new2/files/altmancrosasiassistqforthcoming.pdf</a>.</p>
 
 </body>
 

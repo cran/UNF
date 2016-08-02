@@ -36,7 +36,7 @@ identical(iris, d)
 digest(iris, "md5")
 digest(d, "md5")
 
-## ----, echo = FALSE------------------------------------------------------
+## ---- echo = FALSE-------------------------------------------------------
 # cleanup files
 unlink("iris.RData")
 unlink("iris.csv")
@@ -52,7 +52,7 @@ iris2 <- read.csv("iris.csv")
 identical(iris, iris2)
 identical(unf(iris), unf(iris2))
 
-## ----, echo = FALSE------------------------------------------------------
+## ---- echo = FALSE-------------------------------------------------------
 # cleanup files
 unlink("iris.csv")
 
@@ -72,7 +72,7 @@ identical(unf(x1), unf(x2))
 ## ------------------------------------------------------------------------
 unf(iris)
 
-## ----, echo=FALSE--------------------------------------------------------
+## ---- echo=FALSE---------------------------------------------------------
 cat("> Anderson, Edgar (1935). The irises of the Gaspe Peninsula, *Bulletin of the American Iris Society*, 59, 2-5.", unf(iris)$formatted, "\n")
 
 ## ------------------------------------------------------------------------

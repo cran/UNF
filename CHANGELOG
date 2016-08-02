@@ -1,3 +1,26 @@
+2.0.5 - Thomas J. Leeper
+
+- Exported new function `unf_equal()` to better comply with R CMD check.
+- Converted package to use roxygen documentation.
+- Improved implementation of raw vector handling.
+- Expanded test suite to cover raw, AsIs, and time-series vectors. (#17)
+
+2.0.4 - Thomas J. Leeper
+
+- Added a `unfmatch` element to the return value of `%unf%`.
+- Expanded test suite to cover `%unf%`. (#17)
+
+2.0.3 - Thomas J. Leeper
+
+- Expanded test suite to cover `as.unfvector()`. (#2)
+
+2.0.2 - Thomas J. Leeper
+
+- Allow `%unf%` to be used to compare against a character string containing a UNF signature (#16, h/t Dominik Vogel)
+- Converted `unf()` to an S3 generic, with matrix, list, and data.frame methods.
+- Exposed new function `as.unfvector()`, which coerces data types to UNF character vector specifications. (#15)
+- Added base package imports to NAMESPACE. (#14)
+
 2.0.1 - Thomas J. Leeper
 
 - Fix error in datetime tests due to use `%F` (not supported on Windows for R3.0.3). (#13)
