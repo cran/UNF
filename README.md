@@ -1,4 +1,4 @@
-# Universal Numeric Fingerprint
+# Universal Numeric Fingerprint <img src="man/figures/logo.png" align="right" />
 
 UNF is a cryptographic hash or signature that can be used to uniquely identify (a version of) a rectangular dataset, or a subset thereof. UNF can be used, in tandem with a DOI or Handle, to form a persistent citation to a versioned dataset. A UNF signature is printed in the following form:
 
@@ -6,7 +6,7 @@ UNF is a cryptographic hash or signature that can be used to uniquely identify (
 UNF:[UNF version][:UNF header options]:[UNF hash]
 ```
 
-This allows a data consumer to quickly, easily, and definitively verify an in-hand data file against a data citation or to test for the equality of two datasets, regardless of their variable order or file format. UNF is used by [The Dataverse Network](http://www.thedata.org) archiving software for data citation (making the UNF package a logical companion to the [dvn](https://cran.r-project.org/package=dvn) package). This package implements UNF versions 3 and up (current version is 6). Some details on the UNF algorithm and the R implementation thereof are included in a package vignette ("The UNF Algorithm") and details on use of UNF in data citation is available in another vignette ("Data Citation with UNF").
+This allows a data consumer to quickly, easily, and definitively verify an in-hand data file against a data citation or to test for the equality of two datasets, regardless of their variable order or file format. UNF is used by [The Dataverse Network](https://dataverse.org/) archiving software for data citation (making the UNF package a logical companion to the [dvn](https://cran.r-project.org/package=dvn) package). This package implements UNF versions 3 and up (current version is 6). Some details on the UNF algorithm and the R implementation thereof are included in a package vignette ("The UNF Algorithm") and details on use of UNF in data citation is available in another vignette ("Data Citation with UNF").
 
 Please report any mismatches between this implementation and any other implementation (including Dataverse's) on [the issues page](https://github.com/leeper/UNF/issues)!
 
@@ -26,7 +26,7 @@ While file checksums are a common strategy for verifying a file (e.g., md5 sums 
     ```
     
     ```
-    ## [1] TRUE
+    ## [1] FALSE
     ```
     
     ```r
@@ -45,7 +45,7 @@ While file checksums are a common strategy for verifying a file (e.g., md5 sums 
     ## [1] TRUE
     ```
 
-
+    
 
 2. *UNFs are robust to insignificant rounding error.* This important when dealing with floating-point numeric values. A UNF will also be the same if the data differs in non-significant digits, a file checksum not.
 
@@ -218,7 +218,7 @@ While file checksums are a common strategy for verifying a file (e.g., md5 sums 
 [![CRAN](http://www.r-pkg.org/badges/version/UNF)](https://cran.r-project.org/package=UNF)
 [![Build Status](https://travis-ci.org/leeper/UNF.svg?branch=master)](https://travis-ci.org/leeper/UNF)
 [![Build status](https://ci.appveyor.com/api/projects/status/tx3dkw1rsr9kijm4?svg=true)](https://ci.appveyor.com/project/leeper/unf)
-[![codecov.io](http://codecov.io/github/leeper/UNF/coverage.svg?branch=master)](http://codecov.io/github/leeper/UNF?branch=master)
+[![codecov.io](https://codecov.io/github/leeper/UNF?branch=master)](https://codecov.io/github/leeper/UNF?branch=master)
 ![Downloads](http://cranlogs.r-pkg.org/badges/UNF)
 
 UNF is on CRAN. To install the latest version, simply use:
@@ -231,9 +231,9 @@ To install the latest development version of **UNF** from GitHub:
 
 ```R
 # latest (potentially unstable) version from GitHub
-if (!require("ghit")) {
-    install.packages("ghit")
+if (!require("remotes")) {
+    install.packages("remotes")
 }
-ghit::install_github("leeper/UNF")
+remotes::install_github("leeper/UNF")
 ```
 
