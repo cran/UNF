@@ -85,5 +85,5 @@ unf(iris[iris$Species == 'virginica',])
 
 ## -----------------------------------------------------------------------------
 set.seed(123)
-unf(iris[sample(20, 1:nrow(iris), FALSE),])
+unf(iris[sample(1:nrow(iris), 20, FALSE),])
 

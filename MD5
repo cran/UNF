@@ -1,4 +1,4 @@
-8dd337142da8998dc5549382ec987f3d *DESCRIPTION
+38ba2813dada10398ef093701dc11320 *DESCRIPTION
 2f7c93e9fdc25f93f52311893ed1fd6c *NAMESPACE
 5288888ee94814018eda70833dd0bb17 *NEWS.md
 50c1c59b0a64b09af4e88d7baf68481c *R/UNF-package.R
@@ -6,7 +6,7 @@ a4bb236ccf48681ec22fce132cad7d72 *R/equal.R
 de048690a02ae7f0d5979cab584d1954 *R/expform.R
 dd4a0466e9dba84268ee6eb89d2bcaf8 *R/nonfinite.R
 274b50dd0e2edca121cf98d12bcf7763 *R/signifz.R
-0edf30be35a72f65b565a3debf815476 *R/unf.R
+9956991b6d850e4f41adc697e638ddc0 *R/unf.R
 1ba24b5dc1aed82ad459ec2d9a7d7f5b *R/unf3.R
 52755ed23b368e5980f1e533c37690e3 *R/unf4.R
 5043c51ce94955ac6446a8dba5f8dfe9 *R/unf5.R
@@ -15,16 +15,16 @@ dd4a0466e9dba84268ee6eb89d2bcaf8 *R/nonfinite.R
 66947d7f559793d9483927ce1d315358 *README.md
 010e4b792ef925309b56fa891780de1e *build/vignette.rds
 40d219c0ba3ae30ca797c464f36529b8 *inst/CITATION
-a43b2d7898cb0293394188f6381a8644 *inst/doc/algorithm.html
-b3f661191421cd26b5e05299053f1ff0 *inst/doc/citation.R
-f7d56870656d6aec0d0a03a72b979a2d *inst/doc/citation.html
+7e6fa5ce8d0cddb4ee83664902bdef48 *inst/doc/algorithm.html
+b3291809c78f746d5e83072028a107a3 *inst/doc/citation.R
+3d031290f87f8345e687c3e067b5bdf7 *inst/doc/citation.html
 21f9dd29933e29c341f4114e3da8d094 *man/UNF-package.Rd
 4d465186b5c85fac915482e70fd112e3 *man/as.unfvector.Rd
-26d10a82de7490db2f7e890a510d877b *man/equal.Rd
+578f086b10fc87bc8c5be88cca818f57 *man/equal.Rd
 a575cf5c10eb34daaf1d2860afbd1775 *man/figures/logo.png
 7c52a916ac3461b2845bd138d611a40e *man/figures/logo.xcf
 7a5a5644a726ca38d09abf16d52bd240 *man/signifz.Rd
-562cc384e40a09f043d0577c4066688d *man/unf.Rd
+7df74262a6e720af05623980f2f9ed11 *man/unf.Rd
 93ac45cd323033d0d743cf32587963a0 *tests/test-all.R
 d6e55fc62354bbc33540152295bb0e0d *tests/testthat/test-unf-version-dispatch.R
 1621198866caa02f39cb55a895b751aa *tests/testthat/test-unf6-asis.R
@@ -47,4 +47,4 @@ ddc0a6792917cc5f5fbea63c75f8164f *tests/testthat/test-unf6-raw.R
 ffcb4001210dd990199f69da7de4627e *tests/testthat/test-unf6-ts.R
 407ed25e7060565cd0ed8d69a0c400ec *tests/testthat/test-unf6-unf-class.R
 d332ba04f4a2c25e9d9b30ffa1eac246 *vignettes/algorithm.Rmd
-6dd22a1d6111a5bf86f6ca6d24b8eda1 *vignettes/citation.Rmd
+67e69bb9653f54d41e96f65635299447 *vignettes/citation.Rmd
